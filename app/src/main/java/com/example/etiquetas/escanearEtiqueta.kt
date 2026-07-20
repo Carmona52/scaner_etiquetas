@@ -1,14 +1,17 @@
 package com.example.etiquetas
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -18,6 +21,9 @@ import androidx.fragment.app.Fragment
 import com.example.etiquetas.databinding.EscanearEtiquetaFragmentBinding
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class EscanearEtiquetaFragment : Fragment() {
     private var _binding: EscanearEtiquetaFragmentBinding? = null
@@ -25,7 +31,9 @@ class EscanearEtiquetaFragment : Fragment() {
 
     private lateinit var cameraExecutor: ExecutorService
 
-    private val etiquetasEscaneadas = LinkedHashSet<String>()
+    private val etiquetasEscaneadas =LinkedHashSet<Pair<String, String>>()
+    @Volatile
+    private var ultimaEtiquetaDetectada: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,6 +44,7 @@ class EscanearEtiquetaFragment : Fragment() {
         return binding.root
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -76,13 +85,14 @@ class EscanearEtiquetaFragment : Fragment() {
                     it.surfaceProvider = binding.cameraPreview.surfaceProvider
                 }
 
-            val imageAnalyzer = ImageAnalysis.Builder().setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build().also {
-                it.setAnalyzer(cameraExecutor, barLector { etiqueta ->
-                    requireActivity().runOnUiThread {
-                        agregarEtiqueta(etiqueta)
-                    }
-                })
-            }
+            val imageAnalyzer = ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build().also {
+                    it.setAnalyzer(cameraExecutor, barLector { etiqueta ->
+                        requireActivity().runOnUiThread {
+                            ultimaEtiquetaDetectada = etiqueta
+                        }
+                    })
+                }
 
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
@@ -99,24 +109,30 @@ class EscanearEtiquetaFragment : Fragment() {
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
-    private fun scanBtn(){
+    private fun scanBtn() {
+        val etiqueta = ultimaEtiquetaDetectada
 
-    }
-
-    private fun agregarEtiqueta(etiqueta: String) {
-        if (etiquetasEscaneadas.add(etiqueta)) {
-            requireActivity().runOnUiThread {
-                binding.escaneos.text = etiquetasEscaneadas.joinToString("\n")
-            }
+        if (etiqueta.isNullOrEmpty()) {
+            Toast.makeText(requireContext(), "No hay etiqueta que leer", Toast.LENGTH_SHORT).show()
+            return
         }
+
+        val formato = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+        val fechaEscaneo = formato.format(Date())
+        etiquetasEscaneadas.add(etiqueta to fechaEscaneo)
+        binding.escaneos.text = etiquetasEscaneadas.joinToString("\n") { (valor, fecha) -> "$valor   ${fechaEscaneo}"  }
+        Toast.makeText(requireContext(), "Etiqueta guardada: $etiqueta", Toast.LENGTH_SHORT).show()
     }
 
     private fun cancelarEscaneo() {
         etiquetasEscaneadas.clear()
+        ultimaEtiquetaDetectada = null
         binding.escaneos.text = ""
         Toast.makeText(requireContext(), "Escaneo cancelado", Toast.LENGTH_SHORT).show()
     }
 
+
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun guardarCSV() {
         if (etiquetasEscaneadas.isEmpty()) {
             Toast.makeText(requireContext(), "No hay etiquetas para guardar", Toast.LENGTH_SHORT).show()
@@ -125,7 +141,31 @@ class EscanearEtiquetaFragment : Fragment() {
 
         val nombreArchivo = "etiquetas_${System.currentTimeMillis()}.csv"
 
+        try {
+            val resolver = requireContext().contentResolver
+            val contentValues = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, nombreArchivo)
+                put(MediaStore.MediaColumns.MIME_TYPE, "text/csv")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "Download/Etiquetas")
+            }
 
+            val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+
+            if (uri != null) {
+                resolver.openOutputStream(uri)?.use { outputStream ->
+                    outputStream.write("Etiqueta,Fecha escaneo\n".toByteArray())
+                    etiquetasEscaneadas.forEach { (valor, fecha) ->
+                        outputStream.write("$valor,$fecha\n".toByteArray())
+                    }
+                }
+                Toast.makeText(requireContext(), "CSV guardado en Descargas/Etiquetas", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(requireContext(), "Error al crear el archivo", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error al guardar CSV", e)
+            Toast.makeText(requireContext(), "Error al guardar: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -137,9 +177,11 @@ class EscanearEtiquetaFragment : Fragment() {
             if (allPermissionsGranted()) {
                 startCamera()
             } else {
-                Toast.makeText(requireContext(),
+                Toast.makeText(
+                    requireContext(),
                     "Permisos no otorgados por el usuario.",
-                    Toast.LENGTH_SHORT).show()
+                    Toast.LENGTH_SHORT
+                ).show()
                 requireActivity().finish()
             }
         }
