@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Etiquetas</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="titulo">ESCANEAR ETIQUETAS</string>
+    <string name="saveCSV">Guardar CSV</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="scan">Escanear</string>
+</resources>
