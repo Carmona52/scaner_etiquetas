@@ -6,4 +6,11 @@
     <string name="saveCSV">Guardar CSV</string>
     <string name="cancelar">Cancelar</string>
     <string name="scan">Escanear</string>
+    <string name="clvProducto">Clave \n Producto</string>
+    <string name="piezas">Piezas</string>
+    <string name="kilos">Kilos</string>
+    <string name="lote">Lote</string>
+    <string name="fecha">Fecha</string>
+    <string name="hora">Hora</string>
+
 </resources>
