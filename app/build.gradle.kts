@@ -39,6 +39,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.material)
     val camerax_version = "1.6.1"
     val mlkit_version = "17.3.0"
     val textrecognition_version = "16.0.1"

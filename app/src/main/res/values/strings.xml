@@ -12,5 +12,7 @@
     <string name="lote">Lote</string>
     <string name="fecha">Fecha</string>
     <string name="hora">Hora</string>
+    <string name="login">Iniciar Sesion</string>
+    <string name="bienvenida">Bienvenido a la App de Escaneo de Etiquetas</string>
 
 </resources>

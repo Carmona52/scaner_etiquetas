@@ -13,20 +13,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import com.example.etiquetas.databinding.EscanearEtiquetaFragmentBinding
-import com.example.etiquetas.separador
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
 
 class EscanearEtiquetaFragment : Fragment() {
     private var _binding: EscanearEtiquetaFragmentBinding? = null
@@ -50,8 +44,6 @@ class EscanearEtiquetaFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        cameraExecutor = Executors.newSingleThreadExecutor()
 
         binding.btnCancelar.setOnClickListener {
             cancelarEscaneo()
