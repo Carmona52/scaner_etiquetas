@@ -29,18 +29,17 @@ data class Etiqueta(
 
 class separador {
 
-
-        public fun etiquetaseparation(text: String): Etiqueta? {
-            return when (text.length) {
-                27 -> etiquetaslargas(text)
-                25 -> etiquetasmedianas(text)
-                23 -> etiquetascorta(text)
-                else -> {
-                    Log.d("separador", "Longitud no reconocida: ${text.length}")
-                    null
-                }
-            }as Etiqueta
+    public fun etiquetaseparation(text: String): Etiqueta? {
+        return when (text.length) {
+            27 -> etiquetaslargas(text)
+            25 -> etiquetasmedianas(text)
+            23 -> etiquetascorta(text)
+            else -> {
+                Log.d("separador", "Longitud no reconocida: ${text.length}")
+                null
+            }
         }
+    }
 
     private fun etiquetaslargas(text: String): Etiqueta? {
 
@@ -48,25 +47,25 @@ class separador {
             claveProducto = text.substring(0, 3),
 
             //obtener valores de la hora
-            primDigHora = text[18].toString(),
-            segDigHora = text[14].toString(),
-            primDigMin = text[4].toString(),
-            segDigMin = text[21].toString(),
-            primDigSeg = text[22].toString(),
-            segDigSeg = text[13].toString(),
+            primDigHora = text[17].toString(),
+            segDigHora = text[13].toString(),
+            primDigMin = text[3].toString(),
+            segDigMin = text[20].toString(),
+            primDigSeg = text[21].toString(),
+            segDigSeg = text[12].toString(),
 
             piezas = text.substring(5, 7),
-            kilos = text.substring(7, 11),
+            kilos = text.substring(7, 12),
 
             //valores para fecha
-            ultDigAnio = text[16].toString(),
-            primDigMes = text[20].toString(),
-            segDigMes = text[15].toString(),
-            primDigDia = text[19].toString(),
-            segDigDia = text[17].toString(),
+            ultDigAnio = text[15].toString(),
+            primDigMes = text[19].toString(),
+            segDigMes = text[14].toString(),
+            primDigDia = text[18].toString(),
+            segDigDia = text[16].toString(),
 
-            lote = text.substring(23, 26),
-            identificador = text[27].toString()
+            lote = text.substring(22, 26),
+            identificador = text[26].toString()
         )
 
     }

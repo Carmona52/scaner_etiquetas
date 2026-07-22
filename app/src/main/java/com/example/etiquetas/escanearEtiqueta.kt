@@ -134,7 +134,7 @@ class EscanearEtiquetaFragment : Fragment() {
     }
 
     private fun construirFecha(e: Etiqueta): String {
-        return "${e.segDigDia}${e.primDigDia}/${e.segDigMes}${e.primDigMes}/20${e.ultDigAnio}"
+        return "${e.ultDigAnio}/${e.primDigMes}${e.segDigMes}/${e.primDigDia}${e.segDigDia}"
     }
 
     private fun construirHora(e: Etiqueta): String {
@@ -142,16 +142,17 @@ class EscanearEtiquetaFragment : Fragment() {
     }
 
     private fun cancelarEscaneo() {
-        etiquetasEscaneadas.clear()
-        ultimaEtiquetaDetectada = null
-        binding.escaneos.text = ""
+        etiquetasNormalizadas.clear()
+        while (binding.tableLayout.childCount > 1) {
+            binding.tableLayout.removeViewAt(1)
+        }
         Toast.makeText(requireContext(), "Escaneo cancelado", Toast.LENGTH_SHORT).show()
     }
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun guardarCSV() {
-        if (etiquetasEscaneadas.isEmpty()) {
+        if (etiquetasNormalizadas.isEmpty()) {
             Toast.makeText(requireContext(), "No hay etiquetas para guardar", Toast.LENGTH_SHORT)
                 .show()
             return
