@@ -1,5 +1,7 @@
 package com.example.etiquetas
 
+import android.util.Log
+
 data class Etiqueta(
     val claveProducto: String,
     val piezas: String,
@@ -27,54 +29,55 @@ data class Etiqueta(
 
 class separador {
 
-    public fun etiquetaseparation(text: String) {
-        if (text.length < 26) {
-            return println("La cadena tiene menos de 26 caracteres")
-        }
 
-        when (text.length) {
-            26 -> etiquetaslargas(text)
-            24 -> etiquetasmedianas(text)
-            22 -> etiquetascorta(text)
+        public fun etiquetaseparation(text: String): Etiqueta? {
+            return when (text.length) {
+                27 -> etiquetaslargas(text)
+                25 -> etiquetasmedianas(text)
+                23 -> etiquetascorta(text)
+                else -> {
+                    Log.d("separador", "Longitud no reconocida: ${text.length}")
+                    null
+                }
+            }as Etiqueta
         }
-
-    }
 
     private fun etiquetaslargas(text: String): Etiqueta? {
 
         return Etiqueta(
-            claveProducto = text.substring(0, 2),
+            claveProducto = text.substring(0, 3),
 
             //obtener valores de la hora
-            primDigHora = text.substring(17),
-            segDigHora = text.substring(13),
-            primDigMin = text.substring(3),
-            segDigMin = text.substring(20),
-            primDigSeg = text.substring(21),
-            segDigSeg = text.substring(12),
+            primDigHora = text[18].toString(),
+            segDigHora = text[14].toString(),
+            primDigMin = text[4].toString(),
+            segDigMin = text[21].toString(),
+            primDigSeg = text[22].toString(),
+            segDigSeg = text[13].toString(),
 
-            piezas = text.substring(4, 6),
+            piezas = text.substring(5, 7),
             kilos = text.substring(7, 11),
 
             //valores para fecha
-            ultDigAnio = text.substring(15),
-            primDigMes = text.substring(19),
-            segDigMes = text.substring(14),
-            primDigDia = text.substring(18),
-            segDigDia = text.substring(16),
+            ultDigAnio = text[16].toString(),
+            primDigMes = text[20].toString(),
+            segDigMes = text[15].toString(),
+            primDigDia = text[19].toString(),
+            segDigDia = text[17].toString(),
 
-            lote = text.substring(22, 25),
-            identificador = text.substring(26)
+            lote = text.substring(23, 26),
+            identificador = text[27].toString()
         )
 
     }
 
-    private fun etiquetasmedianas(text: String) {
-
+    private fun etiquetasmedianas(text: String): Etiqueta? {
+        return null
     }
 
-    private fun etiquetascorta(text: String) {
+    private fun etiquetascorta(text: String): Etiqueta? {
 
+        return null
     }
 }
 

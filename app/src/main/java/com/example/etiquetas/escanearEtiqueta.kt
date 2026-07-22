@@ -14,6 +14,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TableLayout
+import android.widget.TableRow
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
@@ -31,7 +33,7 @@ class EscanearEtiquetaFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var cameraExecutor: ExecutorService
     private val etiquetasEscaneadas = LinkedHashSet<Pair<String, String>>()
-
+    private val etiquetasNormalizadas = mutableListOf<Etiqueta>()
     @Volatile
     private var ultimaEtiquetaDetectada: String? = null
 
@@ -90,23 +92,53 @@ class EscanearEtiquetaFragment : Fragment() {
 
 
     private fun guardarEtiqueta(etiqueta: String) {
-        val formato = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
-        val fecha = formato.format(Date())
         val util = separador()
+        val etiqueta = util.etiquetaseparation(etiqueta)
 
-        val mensaje = util.etiquetaseparation(etiqueta)
-        println(mensaje)
+        if(etiqueta == null){
+            requireActivity().runOnUiThread {
+                Toast.makeText(requireContext(),"No hay etiqueta por procesar", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
 
-
-
-        etiquetasEscaneadas.add(etiqueta to fecha)
-
+        etiquetasNormalizadas.add(etiqueta)
 
         requireActivity().runOnUiThread {
-            binding.escaneos.text = etiquetasEscaneadas.joinToString("\n") { (valor, f) -> "$valor - $f" }
-
-
+            agregarFila(etiqueta)
         }
+    }
+
+    private fun agregarFila(e: Etiqueta) {
+        val fila = TableRow(requireContext())
+
+        val valores = listOf(
+            e.claveProducto,
+            e.piezas,
+            e.kilos,
+            e.lote,
+            construirFecha(e),
+            construirHora(e)
+        )
+
+        valores.forEach { texto ->
+            val textView = TextView(requireContext()).apply {
+                layoutParams = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
+                setPadding(6, 6, 6, 6)
+                text = texto
+            }
+            fila.addView(textView)
+        }
+
+        binding.tableLayout.addView(fila)
+    }
+
+    private fun construirFecha(e: Etiqueta): String {
+        return "${e.segDigDia}${e.primDigDia}/${e.segDigMes}${e.primDigMes}/20${e.ultDigAnio}"
+    }
+
+    private fun construirHora(e: Etiqueta): String {
+        return "${e.primDigHora}${e.segDigHora}:${e.primDigMin}${e.segDigMin}:${e.primDigSeg}${e.segDigSeg}"
     }
 
     private fun cancelarEscaneo() {
@@ -139,9 +171,11 @@ class EscanearEtiquetaFragment : Fragment() {
 
             if (uri != null) {
                 resolver.openOutputStream(uri)?.use { outputStream ->
-                    outputStream.write("Etiqueta,Fecha escaneo\n".toByteArray())
-                    etiquetasEscaneadas.forEach { (valor, fecha) ->
-                        outputStream.write("$valor,$fecha\n".toByteArray())
+                    outputStream.write("Clave Producto,Piezas,Kilos,Lote,Fecha,Hora\n".toByteArray())
+                    etiquetasNormalizadas.forEach { e ->
+                        outputStream.write(
+                            "${e.claveProducto},${e.piezas},${e.kilos},${e.lote},${construirFecha(e)},${construirHora(e)}\n".toByteArray()
+                        )
                     }
                 }
                 Toast.makeText(
