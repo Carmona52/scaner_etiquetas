@@ -1,7 +1,6 @@
 package com.example.etiquetas
 
 import android.util.Log
-import java.sql.Date
 import java.time.LocalDateTime
 
 data class Etiqueta(
@@ -32,7 +31,7 @@ data class Etiqueta(
 
 class separador {
 
-    public fun etiquetaseparation(text: String): Etiqueta? {
+    fun etiquetaseparation(text: String): Etiqueta? {
         return when (text.length) {
             27 -> etiquetaslargas(text)
             25 -> etiquetasmedianas(text)
@@ -69,7 +68,6 @@ class separador {
 
             lote = text.substring(22, 26),
             identificador = text[26].toString(),
-
         )
 
     }

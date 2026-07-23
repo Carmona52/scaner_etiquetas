@@ -22,12 +22,14 @@ import com.example.etiquetas.databinding.EscanearEtiquetaFragmentBinding
 import java.io.File
 import androidx.core.content.ContextCompat
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 class EscanearEtiquetaFragment : Fragment() {
     private var _binding: EscanearEtiquetaFragmentBinding? = null
     private val binding get() = _binding!!
     private val etiquetasNormalizadas = mutableListOf<Etiqueta>()
+
     @Volatile
     private var ultimaEtiquetaDetectada = mutableListOf<String>()
 
@@ -45,24 +47,14 @@ class EscanearEtiquetaFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.btnCancelar.setOnClickListener {
-            cancelarEscaneo()
-        }
+        binding.btnCancelar.setOnClickListener { cancelarEscaneo() }
 
-        binding.btnGuardarCSV.setOnClickListener {
-            guardarCSV()
-        }
+        binding.btnGuardarCSV.setOnClickListener { guardarCSV() }
 
     }
 
     private val scanReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            Log.d(
-                TAG,
-                "Broadcast recibido: action=${intent.action}, extras=${
-                    intent.extras?.keySet()?.joinToString()
-                }"
-            )
 
             val codigo = when (intent.action) {
                 ACTION_SUNMI -> intent.getStringExtra(EXTRA_SUNMI)
@@ -92,7 +84,6 @@ class EscanearEtiquetaFragment : Fragment() {
             ContextCompat.RECEIVER_EXPORTED
         )
 
-        Log.d(TAG, "Receiver registrado, esperando broadcasts de Sunmi o Zebra...")
     }
 
     override fun onPause() {
@@ -102,8 +93,6 @@ class EscanearEtiquetaFragment : Fragment() {
 
 
     private fun guardarEtiqueta(etiqueta: String) {
-        Log.d(TAG, "Longitud recibida: ${etiqueta.length} | Contenido: [$etiqueta]")
-
         if (ultimaEtiquetaDetectada.contains(etiqueta)) {
             Toast.makeText(requireContext(), "Ya has escaneado esa etiqueta", Toast.LENGTH_SHORT)
                 .show()
@@ -165,21 +154,26 @@ class EscanearEtiquetaFragment : Fragment() {
         return "${e.primDigHora}${e.segDigHora}:${e.primDigMin}${e.segDigMin}:${e.primDigSeg}${e.segDigSeg}"
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun returnHora(): LocalDateTime? {
-        return LocalDateTime.now()
-    }
 
     private fun cancelarEscaneo() {
-        etiquetasNormalizadas.clear()
-        ultimaEtiquetaDetectada.clear()
-        while (binding.tableLayout.childCount > 1) {
-            binding.tableLayout.removeViewAt(1)
+        if (etiquetasNormalizadas.isEmpty()) {
+            Toast.makeText(requireContext(), "No hay etiquetas para borrar", Toast.LENGTH_SHORT)
+                .show()
+            return
         }
-        Toast.makeText(requireContext(), "Escaneo cancelado", Toast.LENGTH_SHORT).show()
+
+        etiquetasNormalizadas.removeAt(etiquetasNormalizadas.lastIndex)
+        if (ultimaEtiquetaDetectada.isNotEmpty()) {
+            ultimaEtiquetaDetectada.removeAt(ultimaEtiquetaDetectada.lastIndex)
+        }
+
+        val cantidadFilas = binding.tableLayout.childCount
+        if (cantidadFilas > 1) {
+            binding.tableLayout.removeViewAt(cantidadFilas - 1)
+        }
+
+        Toast.makeText(requireContext(), "Última etiqueta eliminada", Toast.LENGTH_SHORT).show()
     }
-
-
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun guardarCSV() {
@@ -188,8 +182,6 @@ class EscanearEtiquetaFragment : Fragment() {
                 .show()
             return
         }
-
-        val nombreArchivo = "etiquetas_${System.currentTimeMillis()}.csv"
         val tempFile = userNameCache.userNameRoute
 
         if (tempFile === null) {
@@ -197,6 +189,11 @@ class EscanearEtiquetaFragment : Fragment() {
         }
 
         val userName = File(tempFile).readText()
+        val date = LocalDateTime.now()
+        val formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+
+
+        val nombreArchivo = "etiquetas_${date.format(formato)}.csv"
 
 
         try {
@@ -218,21 +215,30 @@ class EscanearEtiquetaFragment : Fragment() {
                                 construirHora(
                                     e
                                 )
-                            }, ${userName}, ${returnHora()}\n".toByteArray()
+                            }, ${userName}, ${LocalDateTime.now()}\n".toByteArray()
                         )
                     }
                 }
                 Toast.makeText(
                     requireContext(),
-                    "CSV guardado en Descargas/Etiquetas",
+                    "CSV guardado en Etiquetas/${nombreArchivo}",
                     Toast.LENGTH_LONG
                 ).show()
+
+
+                etiquetasNormalizadas.clear()
+                ultimaEtiquetaDetectada.clear()
+                val cantidadTotalFilas = binding.tableLayout.childCount
+                for (i in cantidadTotalFilas - 1 downTo 1) {
+                    binding.tableLayout.removeViewAt(i)
+                }
+
+
             } else {
                 Toast.makeText(requireContext(), "Error al crear el archivo", Toast.LENGTH_SHORT)
                     .show()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error al guardar CSV", e)
             Toast.makeText(requireContext(), "Error al guardar: ${e.message}", Toast.LENGTH_SHORT)
                 .show()
         }
@@ -245,10 +251,8 @@ class EscanearEtiquetaFragment : Fragment() {
 
     companion object {
         private const val TAG = "Escanear Etiquetas"
-
         private const val ACTION_SUNMI = "com.sunmi.scanner.ACTION_DATA_CODE_RECEIVED"
         private const val EXTRA_SUNMI = "data"
-
         private const val ACTION_ZEBRA = "com.example.etiquetas.SCAN"
         private const val EXTRA_ZEBRA = "com.symbol.datawedge.data_string"
     }

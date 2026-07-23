@@ -16,5 +16,6 @@
     <string name="bienvenida">Bienvenido a la App de Escaneo de Etiquetas</string>
     <string name="por_favor_ingrese_su_nombre">Por favor, ingrese su nombre</string>
     <string name="iniciar_sesion">Iniciar sesion</string>
+    <string name="logo_de_patsa">Logo de Patsa</string>
 
 </resources>
