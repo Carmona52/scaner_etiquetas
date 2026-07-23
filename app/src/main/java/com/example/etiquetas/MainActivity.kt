@@ -10,7 +10,7 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, EscanearEtiquetaFragment())
+                .replace(R.id.fragment_container, LoginActivity())
                 .commit()
         }
     }

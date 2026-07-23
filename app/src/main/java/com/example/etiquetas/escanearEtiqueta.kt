@@ -19,17 +19,17 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import com.example.etiquetas.databinding.EscanearEtiquetaFragmentBinding
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import java.io.File
+import androidx.core.content.ContextCompat
+import java.time.LocalDateTime
+
 
 class EscanearEtiquetaFragment : Fragment() {
     private var _binding: EscanearEtiquetaFragmentBinding? = null
     private val binding get() = _binding!!
-    private lateinit var cameraExecutor: ExecutorService
-    private val etiquetasEscaneadas = LinkedHashSet<Pair<String, String>>()
     private val etiquetasNormalizadas = mutableListOf<Etiqueta>()
     @Volatile
-    private var ultimaEtiquetaDetectada: String? = null
+    private var ultimaEtiquetaDetectada = mutableListOf<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,24 +57,42 @@ class EscanearEtiquetaFragment : Fragment() {
 
     private val scanReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            Log.d(TAG, "Broadcast recibido: ${intent.extras?.keySet()?.joinToString()}")
-            val codigo = intent.getStringExtra("data")
+            Log.d(
+                TAG,
+                "Broadcast recibido: action=${intent.action}, extras=${
+                    intent.extras?.keySet()?.joinToString()
+                }"
+            )
+
+            val codigo = when (intent.action) {
+                ACTION_SUNMI -> intent.getStringExtra(EXTRA_SUNMI)
+                ACTION_ZEBRA -> intent.getStringExtra(EXTRA_ZEBRA)
+                else -> null
+            }
+
             if (!codigo.isNullOrEmpty()) {
                 guardarEtiqueta(codigo)
             }
         }
     }
 
-    @SuppressLint(
-        "UnspecifiedRegisterReceiverFlag",
-        "SuspiciousIndentation",
-        "IntentACTION_DATA_CODE_RECEIVED"
-    )
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onResume() {
         super.onResume()
-        val filter = IntentFilter("com.sunmi.scanner.ACTION_DATA_CODE_RECEIVED")
-        requireContext().registerReceiver(scanReceiver, filter)
-        Log.d(TAG, "Receiver registrado, esperando broadcasts...")
+        val filter = IntentFilter().apply {
+            addAction(ACTION_SUNMI)
+            addAction(ACTION_ZEBRA)
+            addCategory(Intent.CATEGORY_DEFAULT)
+        }
+
+        ContextCompat.registerReceiver(
+            requireContext(),
+            scanReceiver,
+            filter,
+            ContextCompat.RECEIVER_EXPORTED
+        )
+
+        Log.d(TAG, "Receiver registrado, esperando broadcasts de Sunmi o Zebra...")
     }
 
     override fun onPause() {
@@ -84,20 +102,34 @@ class EscanearEtiquetaFragment : Fragment() {
 
 
     private fun guardarEtiqueta(etiqueta: String) {
-        val util = separador()
-        val etiqueta = util.etiquetaseparation(etiqueta)
+        Log.d(TAG, "Longitud recibida: ${etiqueta.length} | Contenido: [$etiqueta]")
 
-        if(etiqueta == null){
-            requireActivity().runOnUiThread {
-                Toast.makeText(requireContext(),"No hay etiqueta por procesar", Toast.LENGTH_SHORT).show()
+        if (ultimaEtiquetaDetectada.contains(etiqueta)) {
+            Toast.makeText(requireContext(), "Ya has escaneado esa etiqueta", Toast.LENGTH_SHORT)
+                .show()
+        } else {
+
+            ultimaEtiquetaDetectada.add(etiqueta)
+
+            val util = separador()
+            val etiquetaParseada = util.etiquetaseparation(etiqueta)
+
+            if (etiquetaParseada == null) {
+                requireActivity().runOnUiThread {
+                    Toast.makeText(
+                        requireContext(),
+                        "No hay etiqueta por procesar (long=${etiqueta.length})",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                return
             }
-            return
-        }
 
-        etiquetasNormalizadas.add(etiqueta)
+            etiquetasNormalizadas.add(etiquetaParseada)
 
-        requireActivity().runOnUiThread {
-            agregarFila(etiqueta)
+            requireActivity().runOnUiThread {
+                agregarFila(etiquetaParseada)
+            }
         }
     }
 
@@ -133,13 +165,20 @@ class EscanearEtiquetaFragment : Fragment() {
         return "${e.primDigHora}${e.segDigHora}:${e.primDigMin}${e.segDigMin}:${e.primDigSeg}${e.segDigSeg}"
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun returnHora(): LocalDateTime? {
+        return LocalDateTime.now()
+    }
+
     private fun cancelarEscaneo() {
         etiquetasNormalizadas.clear()
+        ultimaEtiquetaDetectada.clear()
         while (binding.tableLayout.childCount > 1) {
             binding.tableLayout.removeViewAt(1)
         }
         Toast.makeText(requireContext(), "Escaneo cancelado", Toast.LENGTH_SHORT).show()
     }
+
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -151,6 +190,14 @@ class EscanearEtiquetaFragment : Fragment() {
         }
 
         val nombreArchivo = "etiquetas_${System.currentTimeMillis()}.csv"
+        val tempFile = userNameCache.userNameRoute
+
+        if (tempFile === null) {
+            Log.e("Username", "No hay usuario")
+        }
+
+        val userName = File(tempFile).readText()
+
 
         try {
             val resolver = requireContext().contentResolver
@@ -164,10 +211,14 @@ class EscanearEtiquetaFragment : Fragment() {
 
             if (uri != null) {
                 resolver.openOutputStream(uri)?.use { outputStream ->
-                    outputStream.write("Clave Producto,Piezas,Kilos,Lote,Fecha,Hora\n".toByteArray())
+                    outputStream.write("Clave Producto,Piezas,Kilos,Lote,Fecha,Hora, Escaneado por, Fecha Escaneo\n".toByteArray())
                     etiquetasNormalizadas.forEach { e ->
                         outputStream.write(
-                            "${e.claveProducto},${e.piezas},${e.kilos},${e.lote},${construirFecha(e)},${construirHora(e)}\n".toByteArray()
+                            "${e.claveProducto},${e.piezas},${e.kilos},${e.lote},${construirFecha(e)},${
+                                construirHora(
+                                    e
+                                )
+                            }, ${userName}, ${returnHora()}\n".toByteArray()
                         )
                     }
                 }
@@ -190,10 +241,15 @@ class EscanearEtiquetaFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        cameraExecutor.shutdown()
     }
 
     companion object {
         private const val TAG = "Escanear Etiquetas"
+
+        private const val ACTION_SUNMI = "com.sunmi.scanner.ACTION_DATA_CODE_RECEIVED"
+        private const val EXTRA_SUNMI = "data"
+
+        private const val ACTION_ZEBRA = "com.example.etiquetas.SCAN"
+        private const val EXTRA_ZEBRA = "com.symbol.datawedge.data_string"
     }
 }

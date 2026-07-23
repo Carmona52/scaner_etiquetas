@@ -1,6 +1,8 @@
 package com.example.etiquetas
 
 import android.util.Log
+import java.sql.Date
+import java.time.LocalDateTime
 
 data class Etiqueta(
     val claveProducto: String,
@@ -24,7 +26,8 @@ data class Etiqueta(
     val segDigSeg: String,
 
 
-    val identificador: String
+    val identificador: String,
+    val fechaEscaneo: LocalDateTime? = null
 )
 
 class separador {
@@ -65,7 +68,8 @@ class separador {
             segDigDia = text[16].toString(),
 
             lote = text.substring(22, 26),
-            identificador = text[26].toString()
+            identificador = text[26].toString(),
+
         )
 
     }
