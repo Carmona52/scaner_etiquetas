@@ -16,9 +16,31 @@
         android:textSize="24sp"
         android:textStyle="bold" />
 
-    <ScrollView
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="10dp">
+
+        <Spinner
+            android:id="@+id/spinnerZona"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <Spinner
+            android:id="@+id/spinnerCamara"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="520dp"
         android:layout_weight="1">
 
         <TableLayout
@@ -81,8 +103,6 @@
             </TableRow>
 
 
-
-
         </TableLayout>
     </ScrollView>
 
@@ -106,7 +126,7 @@
                 android:backgroundTint="@color/red"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
-                android:text="@string/cancelar"
+                android:text="@string/deleteLast"
                 android:textColor="@color/white"
                 android:textSize="16sp" />
 

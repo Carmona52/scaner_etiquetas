@@ -5,6 +5,7 @@
     <string name="titulo">ESCANEAR ETIQUETAS</string>
     <string name="saveCSV">Guardar CSV</string>
     <string name="cancelar">Cancelar</string>
+    <string name="deleteLast">Eliminar Último Escaneado</string>
     <string name="scan">Escanear</string>
     <string name="clvProducto">Clave \n Producto</string>
     <string name="piezas">Piezas</string>

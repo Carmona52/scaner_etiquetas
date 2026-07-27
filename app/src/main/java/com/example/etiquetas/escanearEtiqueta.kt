@@ -23,7 +23,20 @@ import java.io.File
 import androidx.core.content.ContextCompat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 
+private val zonaCamaraMap = mapOf(
+    "Zona 1" to listOf("Camara 1", "Camara 3"),
+    "Zona 2" to listOf("Camara 2", "Camara 4"),
+    "Zona 3" to listOf("Camara 5"),
+    "Zona 4" to listOf("Camara 6", "Camara 7"),
+    "Zona 5" to listOf("Camara 8", "Camara 9")
+)
+
+private var zonaSeleccionada: String? = null
+private var camaraSeleccionada: String? = null
 
 class EscanearEtiquetaFragment : Fragment() {
     private var _binding: EscanearEtiquetaFragmentBinding? = null
@@ -46,6 +59,7 @@ class EscanearEtiquetaFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        configurarSelectores()
 
         binding.btnCancelar.setOnClickListener { cancelarEscaneo() }
 
@@ -54,6 +68,7 @@ class EscanearEtiquetaFragment : Fragment() {
     }
 
     private val scanReceiver = object : BroadcastReceiver() {
+        @RequiresApi(Build.VERSION_CODES.O)
         override fun onReceive(context: Context, intent: Intent) {
 
             val codigo = when (intent.action) {
@@ -91,15 +106,72 @@ class EscanearEtiquetaFragment : Fragment() {
         requireContext().unregisterReceiver(scanReceiver)
     }
 
+    private fun configurarSelectores() {
+        val zonas = zonaCamaraMap.keys.toList()
 
+        val zoneName = createTempFile(prefix = "zoneName", suffix = ".tmp")
+        val cameraName = createTempFile(prefix = "cameraName", suffix = ".tmp")
+
+
+        val adapterZona =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, zonas)
+        adapterZona.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerZona.adapter = adapterZona
+
+        binding.spinnerZona.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                zonaSeleccionada = zonas[position]
+                zoneName.writeText(zonaSeleccionada.toString())
+                zone.zoneName = zoneName.absolutePath
+                actualizarCamaras(zonaSeleccionada!!)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+
+        binding.spinnerCamara.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val camaras = zonaCamaraMap[zonaSeleccionada] ?: emptyList()
+                if (position < camaras.size) {
+                    camaraSeleccionada = camaras[position]
+                    cameraName.writeText(camaraSeleccionada.toString())
+                    camera.cameraName = cameraName.absolutePath
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+
+        if (zonas.isNotEmpty()) {
+            actualizarCamaras(zonas[0])
+        }
+    }
+
+    private fun actualizarCamaras(zona: String) {
+        val camaras = zonaCamaraMap[zona] ?: emptyList()
+        val adapterCamara =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, camaras)
+        adapterCamara.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerCamara.adapter = adapterCamara
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun guardarEtiqueta(etiqueta: String) {
         if (ultimaEtiquetaDetectada.contains(etiqueta)) {
             Toast.makeText(requireContext(), "Ya has escaneado esa etiqueta", Toast.LENGTH_SHORT)
                 .show()
         } else {
-
-            ultimaEtiquetaDetectada.add(etiqueta)
-
             val util = separador()
             val etiquetaParseada = util.etiquetaseparation(etiqueta)
 
@@ -114,14 +186,17 @@ class EscanearEtiquetaFragment : Fragment() {
                 return
             }
 
-            etiquetasNormalizadas.add(etiquetaParseada)
+            val etiquetaConTimestamp = etiquetaParseada.copy(fechaEscaneo = LocalDateTime.now())
 
+            etiquetasNormalizadas.add(etiquetaConTimestamp)
+            ultimaEtiquetaDetectada.add(etiqueta)
             requireActivity().runOnUiThread {
-                agregarFila(etiquetaParseada)
+                agregarFila(etiquetaConTimestamp)
             }
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun agregarFila(e: Etiqueta) {
         val fila = TableRow(requireContext())
 
@@ -146,14 +221,18 @@ class EscanearEtiquetaFragment : Fragment() {
         binding.tableLayout.addView(fila)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun construirFecha(e: Etiqueta): String {
-        return "${e.ultDigAnio}/${e.primDigMes}${e.segDigMes}/${e.primDigDia}${e.segDigDia}"
+        val fecha = LocalDateTime.now();
+        val anio = fecha.year
+        val firstDigitsofYear = anio.toString().substring(0, 3)
+
+        return "${e.primDigDia}${e.segDigDia}/${e.primDigMes}${e.segDigMes}/${firstDigitsofYear}${e.ultDigAnio}"
     }
 
     private fun construirHora(e: Etiqueta): String {
         return "${e.primDigHora}${e.segDigHora}:${e.primDigMin}${e.segDigMin}:${e.primDigSeg}${e.segDigSeg}"
     }
-
 
     private fun cancelarEscaneo() {
         if (etiquetasNormalizadas.isEmpty()) {
@@ -183,12 +262,25 @@ class EscanearEtiquetaFragment : Fragment() {
             return
         }
         val tempFile = userNameCache.userNameRoute
+        val zoneName = zone.zoneName
+        val cameraName = camera.cameraName
+
 
         if (tempFile === null) {
             Log.e("Username", "No hay usuario")
         }
 
+        if(zoneName === null){
+            Log.e("Zone", "No hay zona Seleccionada")
+        }
+
+        if(cameraName === null) Log.e("Camera", "No hay Camara Seleccionada")
+
+
+
         val userName = File(tempFile).readText()
+        val camara = File(cameraName).readText()
+        val zona = File(zoneName).readText()
         val date = LocalDateTime.now()
         val formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
 
@@ -208,14 +300,12 @@ class EscanearEtiquetaFragment : Fragment() {
 
             if (uri != null) {
                 resolver.openOutputStream(uri)?.use { outputStream ->
-                    outputStream.write("Clave Producto,Piezas,Kilos,Lote,Fecha,Hora, Escaneado por, Fecha Escaneo\n".toByteArray())
+                    outputStream.write("Clave Producto,Piezas,Kilos,Lote,Fecha,Hora,Notas, Escaneado por, Fecha Escaneo, Zona, Camara\n".toByteArray())
                     etiquetasNormalizadas.forEach { e ->
                         outputStream.write(
                             "${e.claveProducto},${e.piezas},${e.kilos},${e.lote},${construirFecha(e)},${
-                                construirHora(
-                                    e
-                                )
-                            }, ${userName}, ${LocalDateTime.now()}\n".toByteArray()
+                                construirHora(e)
+                            }, ${e.notas}, ${userName}, ${LocalDateTime.now()}, ${zona}, ${camara}\n".toByteArray()
                         )
                     }
                 }
