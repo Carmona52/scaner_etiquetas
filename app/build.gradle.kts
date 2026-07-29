@@ -1,9 +1,12 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.androidx.room)
 }
 
 android {
+
     namespace = "com.example.etiquetas"
     compileSdk {
         version = release(37) {
@@ -36,23 +39,21 @@ android {
         compose = true
         viewBinding = true
     }
+
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.sqlite.bundled)
+    implementation(libs.androidx.room.sqlite.wrapper)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.material)
-    val camerax_version = "1.6.1"
-    val mlkit_version = "17.3.0"
-    val textrecognition_version = "16.0.1"
-    implementation ("androidx.camera:camera-core:${camerax_version}")
-    implementation ("androidx.camera:camera-camera2:${camerax_version}")
-    implementation ("androidx.camera:camera-lifecycle:${camerax_version}")
-    implementation ("androidx.camera:camera-video:${camerax_version}")
-    implementation ("androidx.camera:camera-view:${camerax_version}")
-    implementation ("androidx.camera:camera-extensions:${camerax_version}")
-    implementation("com.google.mlkit:barcode-scanning:${mlkit_version}")
-    implementation("com.google.mlkit:text-recognition:${textrecognition_version}")
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.fragment.ktx)
     implementation(platform(libs.androidx.compose.bom))
@@ -70,4 +71,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    
 }

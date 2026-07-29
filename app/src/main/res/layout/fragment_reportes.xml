@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/reportesMain"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".reportesActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/generateReport"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Genere un reporte con todos los movimientos registrados hasta el momento."
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        />
+
+    <Button
+        android:id="@+id/generarReporteGeneral"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:backgroundTint="@color/green"
+        android:text="@string/generateReport"
+        android:textColor="@color/white"
+        android:textStyle="bold"/>
+
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        app:dividerColor="@color/black"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="O"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Genere un reporte específico seleccionando los valores correspondientes."
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="15sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="@string/select_camara"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="@string/select_turno"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/selectorCamara"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2" />
+
+        <Spinner
+            android:id="@+id/selectorTurno"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/select_mov"
+            android:textAlignment="textStart"
+            android:textColor="@color/black" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/selectorMovimiento"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/fechaReporte"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:focusable="false"
+            android:clickable="true"
+            android:text="Selecciona fecha" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/generarReporte"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/yellow"
+            android:text="@string/gen_specific_report"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

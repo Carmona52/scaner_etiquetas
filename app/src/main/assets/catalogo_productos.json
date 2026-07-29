@@ -1,0 +1,1334 @@
+[
+  {
+    "COD": 1,
+    "DESCRIPCION": "NEW YORK ESPECIAL"
+  },
+  {
+    "COD": 2,
+    "DESCRIPCION": "MERCADO FRESCO 2DA"
+  },
+  {
+    "COD": 4,
+    "DESCRIPCION": "ROSTICERO FRESCO DE 1A (ALMAC)"
+  },
+  {
+    "COD": 5,
+    "DESCRIPCION": "ROSTICERO CONGELADO XX CHICA"
+  },
+  {
+    "COD": 7,
+    "DESCRIPCION": "ROSTICERO CONGELADO XX MEDIANA"
+  },
+  {
+    "COD": 8,
+    "DESCRIPCION": "GALLINA FRESCA 1RA"
+  },
+  {
+    "COD": 9,
+    "DESCRIPCION": "ROSTICERO FRESCO XX"
+  },
+  {
+    "COD": 10,
+    "DESCRIPCION": "CAQUECTICO"
+  },
+  {
+    "COD": 11,
+    "DESCRIPCION": "PIERNA CON MUSLO FRESCA 1RA"
+  },
+  {
+    "COD": 12,
+    "DESCRIPCION": "PECHUGA FRESCA 1RA"
+  },
+  {
+    "COD": 13,
+    "DESCRIPCION": "RETAZO FRESCO 1RA"
+  },
+  {
+    "COD": 14,
+    "DESCRIPCION": "PIERNA CONGELADA 1RA"
+  },
+  {
+    "COD": 16,
+    "DESCRIPCION": "ROSTICERO NATURAL 1.10-1.20"
+  },
+  {
+    "COD": 17,
+    "DESCRIPCION": "ROSTICERO NATURAL 1.20-1.30"
+  },
+  {
+    "COD": 18,
+    "DESCRIPCION": "ROSTICERO NATURAL 1.30-1.40"
+  },
+  {
+    "COD": 19,
+    "DESCRIPCION": "ROSTICERO NATURAL 1.40-1.50"
+  },
+  {
+    "COD": 20,
+    "DESCRIPCION": "ROSTICERO NATURAL 1.50-1.60"
+  },
+  {
+    "COD": 21,
+    "DESCRIPCION": "ROSTICERO NATURAL 1.60-1.70"
+  },
+  {
+    "COD": 22,
+    "DESCRIPCION": "ROSTICERO CONGELADO 0.70-1.00"
+  },
+  {
+    "COD": 23,
+    "DESCRIPCION": "ROSTICERO CONGELADO C"
+  },
+  {
+    "COD": 24,
+    "DESCRIPCION": "ROSTICERO CONGELADO 1.00-1.10"
+  },
+  {
+    "COD": 25,
+    "DESCRIPCION": "ROSTICERO CONGELADO 1.10-1.20"
+  },
+  {
+    "COD": 26,
+    "DESCRIPCION": "ROSTICERO CONGELADO 1.20-1.30"
+  },
+  {
+    "COD": 27,
+    "DESCRIPCION": "ROSTICERO CONGELADO 1.30-1.40"
+  },
+  {
+    "COD": 28,
+    "DESCRIPCION": "ROSTICERO NATURAL 1.00-1.10"
+  },
+  {
+    "COD": 36,
+    "DESCRIPCION": "ROSTICERO NATURAL 1.70-2.0"
+  },
+  {
+    "COD": 37,
+    "DESCRIPCION": "FILETE FRESCO 1RA"
+  },
+  {
+    "COD": 38,
+    "DESCRIPCION": "ALA FRESCA 1RA"
+  },
+  {
+    "COD": 39,
+    "DESCRIPCION": "PIERNA CON MUSLO 2DA"
+  },
+  {
+    "COD": 40,
+    "DESCRIPCION": "PECHUGA 2DA"
+  },
+  {
+    "COD": 42,
+    "DESCRIPCION": "PECHUGA CONGELADA 1RA"
+  },
+  {
+    "COD": 43,
+    "DESCRIPCION": "VISCERA FRESCA DE GALLINA"
+  },
+  {
+    "COD": 44,
+    "DESCRIPCION": "HUEVERA DE GALLINA"
+  },
+  {
+    "COD": 45,
+    "DESCRIPCION": "PECHUGA FRESCA DE GALLINA"
+  },
+  {
+    "COD": 46,
+    "DESCRIPCION": "PIERNA FRESCA DE GALLINA"
+  },
+  {
+    "COD": 47,
+    "DESCRIPCION": "PASTA DE POLLO"
+  },
+  {
+    "COD": 48,
+    "DESCRIPCION": "RETAZO FRESCO DE GALLINA"
+  },
+  {
+    "COD": 49,
+    "DESCRIPCION": "ALA FRESCA DE GALLINA"
+  },
+  {
+    "COD": 50,
+    "DESCRIPCION": "PIEL DE GALLINA"
+  },
+  {
+    "COD": 51,
+    "DESCRIPCION": "HUESO DE GALLINA"
+  },
+  {
+    "COD": 52,
+    "DESCRIPCION": "RETAZO CONGELADO 1RA"
+  },
+  {
+    "COD": 53,
+    "DESCRIPCION": "HUEVO COMERCIAL"
+  },
+  {
+    "COD": 54,
+    "DESCRIPCION": "PATAS (VISCERAS)"
+  },
+  {
+    "COD": 55,
+    "DESCRIPCION": "NEW YORK T"
+  },
+  {
+    "COD": 56,
+    "DESCRIPCION": "ROSTICERO HIDRATADO GDE."
+  },
+  {
+    "COD": 57,
+    "DESCRIPCION": "SUPER MERCADO"
+  },
+  {
+    "COD": 58,
+    "DESCRIPCION": "ROSTICERO HIDRATADO CHICO"
+  },
+  {
+    "COD": 59,
+    "DESCRIPCION": "ROSTICERO NATURAL 0.70-1.00"
+  },
+  {
+    "COD": 60,
+    "DESCRIPCION": "RETAZO FRESCO DE 2A."
+  },
+  {
+    "COD": 61,
+    "DESCRIPCION": "CABEZA (VISC)"
+  },
+  {
+    "COD": 62,
+    "DESCRIPCION": "HIGADO"
+  },
+  {
+    "COD": 63,
+    "DESCRIPCION": "MOLLEJA"
+  },
+  {
+    "COD": 64,
+    "DESCRIPCION": "PECHUGA CONGELADA 2DA"
+  },
+  {
+    "COD": 65,
+    "DESCRIPCION": "PIERNA ENHIELADA 1A."
+  },
+  {
+    "COD": 66,
+    "DESCRIPCION": "RETAZO ENHIELADO 1A."
+  },
+  {
+    "COD": 67,
+    "DESCRIPCION": "PECHUGA ENHIELADA 1A."
+  },
+  {
+    "COD": 68,
+    "DESCRIPCION": "POLLO AHOGADO"
+  },
+  {
+    "COD": 69,
+    "DESCRIPCION": "CABEZA 2A. (VISC)"
+  },
+  {
+    "COD": 70,
+    "DESCRIPCION": "ROSTICERO NATURAL XX 0.700-1.0"
+  },
+  {
+    "COD": 71,
+    "DESCRIPCION": "ROSTICERO NATURAL XX 1.00-1.50"
+  },
+  {
+    "COD": 72,
+    "DESCRIPCION": "ROSTICERO NATURAL XX 1.50-2.00"
+  },
+  {
+    "COD": 73,
+    "DESCRIPCION": "PIERNA SUPERIOR"
+  },
+  {
+    "COD": 74,
+    "DESCRIPCION": "MUSLO SUPERIOR"
+  },
+  {
+    "COD": 76,
+    "DESCRIPCION": "MUSLO 1RA"
+  },
+  {
+    "COD": 77,
+    "DESCRIPCION": "ROSTICERO CONGELADO \"GG\""
+  },
+  {
+    "COD": 78,
+    "DESCRIPCION": "ROST.HIDRATADO CHICO CAJAS"
+  },
+  {
+    "COD": 79,
+    "DESCRIPCION": "ROST.HIDRATADO GDE. CAJAS"
+  },
+  {
+    "COD": 80,
+    "DESCRIPCION": "ROSTICERO HIDRATADO 0.70-1.00"
+  },
+  {
+    "COD": 81,
+    "DESCRIPCION": "ROSTICERO HIDRATADO 1.00-1.10"
+  },
+  {
+    "COD": 82,
+    "DESCRIPCION": "ROSTICERO HIDRATADO 1.10-1.20"
+  },
+  {
+    "COD": 83,
+    "DESCRIPCION": "ROSTICERO HIDRATADO 1.20-1.30"
+  },
+  {
+    "COD": 84,
+    "DESCRIPCION": "ROSTICERO HIDRATADO 1.30-1.40"
+  },
+  {
+    "COD": 85,
+    "DESCRIPCION": "ROSTICERO HIDRATADO 1.40-1.50"
+  },
+  {
+    "COD": 86,
+    "DESCRIPCION": "ROSTICERO HIDRATADO 1.50-1.60"
+  },
+  {
+    "COD": 87,
+    "DESCRIPCION": "ROSTICERO HIDRATADO 1.60-1.70"
+  },
+  {
+    "COD": 88,
+    "DESCRIPCION": "ROSTICERO HIDRAT. 1.70-2.00"
+  },
+  {
+    "COD": 90,
+    "DESCRIPCION": "ROSTICERO HIDRAT. XX 0.700-1.0"
+  },
+  {
+    "COD": 91,
+    "DESCRIPCION": "ROSTICERO HIDRAT. XX 1.00-1.50"
+  },
+  {
+    "COD": 92,
+    "DESCRIPCION": "ROSTICERO HIDRATADO 2DA GRANDE"
+  },
+  {
+    "COD": 93,
+    "DESCRIPCION": "ROSTICERO CONGELADO 1.40-1.50"
+  },
+  {
+    "COD": 94,
+    "DESCRIPCION": "ROSTICERO CONGELADO 1.50-1.60"
+  },
+  {
+    "COD": 95,
+    "DESCRIPCION": "ROSTICERO CONGELADO 1.60-1.70"
+  },
+  {
+    "COD": 96,
+    "DESCRIPCION": "ROSTICERO CONGELADO 1.70-2.00"
+  },
+  {
+    "COD": 97,
+    "DESCRIPCION": "PATA NATURAL MEDIANA"
+  },
+  {
+    "COD": 100,
+    "DESCRIPCION": "POLLO EN PIE"
+  },
+  {
+    "COD": 101,
+    "DESCRIPCION": "MERCADO ENHIELADO 2DA."
+  },
+  {
+    "COD": 102,
+    "DESCRIPCION": "ROSTICERO ENHIELADO 1RA."
+  },
+  {
+    "COD": 103,
+    "DESCRIPCION": "ROSTICERO ENHIELADO 2DA."
+  },
+  {
+    "COD": 104,
+    "DESCRIPCION": "PIERNA CONGELADA B"
+  },
+  {
+    "COD": 105,
+    "DESCRIPCION": "PATA ESCALDADA"
+  },
+  {
+    "COD": 106,
+    "DESCRIPCION": "PATA NATURAL"
+  },
+  {
+    "COD": 107,
+    "DESCRIPCION": "CABEZA ESCALDADA"
+  },
+  {
+    "COD": 108,
+    "DESCRIPCION": "CABEZA NATURAL"
+  },
+  {
+    "COD": 109,
+    "DESCRIPCION": "PATA NATURAL GRANDE"
+  },
+  {
+    "COD": 110,
+    "DESCRIPCION": "SUPER MERCADO (SM)"
+  },
+  {
+    "COD": 112,
+    "DESCRIPCION": "HARINA DE CARNE"
+  },
+  {
+    "COD": 120,
+    "DESCRIPCION": "NEW YORK (NYT)"
+  },
+  {
+    "COD": 121,
+    "DESCRIPCION": "NEW YORK (NYC)"
+  },
+  {
+    "COD": 122,
+    "DESCRIPCION": "GALLINA ENHIELADA 1RA"
+  },
+  {
+    "COD": 130,
+    "DESCRIPCION": "HUEVO CASCADO"
+  },
+  {
+    "COD": 133,
+    "DESCRIPCION": "GRASA DE POLLO"
+  },
+  {
+    "COD": 134,
+    "DESCRIPCION": "HARINA MIXTA"
+  },
+  {
+    "COD": 135,
+    "DESCRIPCION": "RETAZO SIN ALA"
+  },
+  {
+    "COD": 148,
+    "DESCRIPCION": "HARINA PREMIUM"
+  },
+  {
+    "COD": 153,
+    "DESCRIPCION": "HUEVO COMERCIAL"
+  },
+  {
+    "COD": 184,
+    "DESCRIPCION": "MOVILIZACION DE POLLO"
+  },
+  {
+    "COD": 190,
+    "DESCRIPCION": "AUTOMOVIL USADO"
+  },
+  {
+    "COD": 191,
+    "DESCRIPCION": "CHAROLAS LAMINA GALVANIZADA"
+  },
+  {
+    "COD": 194,
+    "DESCRIPCION": "MAQ. EQPO. RASTRO DE AVES"
+  },
+  {
+    "COD": 209,
+    "DESCRIPCION": "CHATARRA"
+  },
+  {
+    "COD": 334,
+    "DESCRIPCION": "DESPERDICIO DE PAPEL"
+  },
+  {
+    "COD": 361,
+    "DESCRIPCION": "HUESO DE PECHUGA"
+  },
+  {
+    "COD": 362,
+    "DESCRIPCION": "RABADILLA/PASTA"
+  },
+  {
+    "COD": 369,
+    "DESCRIPCION": "ROSTICERO HIDRATADO XX"
+  },
+  {
+    "COD": 370,
+    "DESCRIPCION": "ACEITE COMESTIBLE"
+  },
+  {
+    "COD": 371,
+    "DESCRIPCION": "ALA MARINADA"
+  },
+  {
+    "COD": 372,
+    "DESCRIPCION": "PIERNA / MUSLO MARINADO"
+  },
+  {
+    "COD": 375,
+    "DESCRIPCION": "PECHUGA DESHUESADA CONG 1A."
+  },
+  {
+    "COD": 379,
+    "DESCRIPCION": "PECHUGA DESH. CON MARINADO"
+  },
+  {
+    "COD": 380,
+    "DESCRIPCION": "FAJITAS MARINADAS"
+  },
+  {
+    "COD": 384,
+    "DESCRIPCION": "PIERNA Y MUSLO CORTE AMERICANO"
+  },
+  {
+    "COD": 385,
+    "DESCRIPCION": "PECHUGA CORTE AMERICANO"
+  },
+  {
+    "COD": 386,
+    "DESCRIPCION": "NEW YORK C"
+  },
+  {
+    "COD": 388,
+    "DESCRIPCION": "MUSLO CONGELADO"
+  },
+  {
+    "COD": 389,
+    "DESCRIPCION": "RETAZO CONGELADO 2DA"
+  },
+  {
+    "COD": 391,
+    "DESCRIPCION": "ALON"
+  },
+  {
+    "COD": 392,
+    "DESCRIPCION": "RABADILLA"
+  },
+  {
+    "COD": 395,
+    "DESCRIPCION": "FAJITAS DE PECHUGA FRESCA"
+  },
+  {
+    "COD": 396,
+    "DESCRIPCION": "PIERNA Y MUSLO 1A. CONGELADO"
+  },
+  {
+    "COD": 397,
+    "DESCRIPCION": "ALA MARINADA CONGELADA"
+  },
+  {
+    "COD": 400,
+    "DESCRIPCION": "MUSLO LIGHT"
+  },
+  {
+    "COD": 401,
+    "DESCRIPCION": "PIERNA LIGHT"
+  },
+  {
+    "COD": 402,
+    "DESCRIPCION": "MILANESA DE POLLO"
+  },
+  {
+    "COD": 403,
+    "DESCRIPCION": "PECHUGA SIN HUESO CONGELADA"
+  },
+  {
+    "COD": 404,
+    "DESCRIPCION": "FAJITA DE PECHUGA CONGELADA"
+  },
+  {
+    "COD": 405,
+    "DESCRIPCION": "MUSLO DE IRA CONGELADO"
+  },
+  {
+    "COD": 406,
+    "DESCRIPCION": "PIERNA BATE IRA CONGELADO"
+  },
+  {
+    "COD": 408,
+    "DESCRIPCION": "MUSLO DESHUESADO"
+  },
+  {
+    "COD": 409,
+    "DESCRIPCION": "ESCALOPAS/POLLO BAE 150 GRS"
+  },
+  {
+    "COD": 410,
+    "DESCRIPCION": "CARNE MOLIDA"
+  },
+  {
+    "COD": 411,
+    "DESCRIPCION": "ROSTICERO NATURAL 1.7 A 2.5"
+  },
+  {
+    "COD": 412,
+    "DESCRIPCION": "ROSTICERO NATURAL 2.5 A 3.5"
+  },
+  {
+    "COD": 414,
+    "DESCRIPCION": "ALA MARINADA"
+  },
+  {
+    "COD": 420,
+    "DESCRIPCION": "ROSTICERO MARINADO"
+  },
+  {
+    "COD": 421,
+    "DESCRIPCION": "POLLO PECHUGA C/HUESO C/VIPS"
+  },
+  {
+    "COD": 422,
+    "DESCRIPCION": "POLLO PIERNA Y MUSLO"
+  },
+  {
+    "COD": 423,
+    "DESCRIPCION": "POLLO ALITAS ADOBADAS"
+  },
+  {
+    "COD": 424,
+    "DESCRIPCION": "POLLO PECHUGA DESHUESADA A GRA"
+  },
+  {
+    "COD": 425,
+    "DESCRIPCION": "POLLO ENTERO SIN VICERAS"
+  },
+  {
+    "COD": 426,
+    "DESCRIPCION": "RECORTE DE FILETE"
+  },
+  {
+    "COD": 427,
+    "DESCRIPCION": "PIERNA MARINADA"
+  },
+  {
+    "COD": 428,
+    "DESCRIPCION": "MUSLO MARINADO"
+  },
+  {
+    "COD": 429,
+    "DESCRIPCION": "ROSTICERO HIDRATADO 1.7-1.9"
+  },
+  {
+    "COD": 430,
+    "DESCRIPCION": "ROSTICERO HIDRATADO 1.9-2.2"
+  },
+  {
+    "COD": 431,
+    "DESCRIPCION": "ROSTICERO HIDRATADO 2.2-3.5"
+  },
+  {
+    "COD": 432,
+    "DESCRIPCION": "PIERNA C/MUSLO ESCALDADA 1A."
+  },
+  {
+    "COD": 433,
+    "DESCRIPCION": "ROST. NAT XX 10-12"
+  },
+  {
+    "COD": 434,
+    "DESCRIPCION": "ROST.NAT XX1.2-1.5"
+  },
+  {
+    "COD": 435,
+    "DESCRIPCION": "ROST.NATURAL SECO 1.7 A 2.50 T"
+  },
+  {
+    "COD": 436,
+    "DESCRIPCION": "HARINA PLUS"
+  },
+  {
+    "COD": 438,
+    "DESCRIPCION": "PIERNA S/HUESO Y S/PIEL"
+  },
+  {
+    "COD": 439,
+    "DESCRIPCION": "MUSLO S/HUESO Y S/PIEL"
+  },
+  {
+    "COD": 440,
+    "DESCRIPCION": "POLLO PART C/AMER. S /V"
+  },
+  {
+    "COD": 441,
+    "DESCRIPCION": "PIERNA BATE MARINADA"
+  },
+  {
+    "COD": 442,
+    "DESCRIPCION": "POLLO CHESTER"
+  },
+  {
+    "COD": 443,
+    "DESCRIPCION": "POLLO INYECTADO 1.4 A 1.5"
+  },
+  {
+    "COD": 444,
+    "DESCRIPCION": "PATA CONGELADA"
+  },
+  {
+    "COD": 447,
+    "DESCRIPCION": "ALA NATURAL CONGELADA"
+  },
+  {
+    "COD": 448,
+    "DESCRIPCION": "ESCALOPA DE POLLO 180 GRS."
+  },
+  {
+    "COD": 449,
+    "DESCRIPCION": "ESCALOPA POLLO 150 GRS VIPS"
+  },
+  {
+    "COD": 450,
+    "DESCRIPCION": "HUACAL"
+  },
+  {
+    "COD": 451,
+    "DESCRIPCION": "PIEL DE POLLO CONGELADA"
+  },
+  {
+    "COD": 452,
+    "DESCRIPCION": "PEZCUEZO SIN PIEL CONGELADO"
+  },
+  {
+    "COD": 453,
+    "DESCRIPCION": "ROSTICERO NAT. 1.7 A 2.5 TOTES"
+  },
+  {
+    "COD": 501,
+    "DESCRIPCION": "CLAVE CANCELADA **NO USAR**"
+  },
+  {
+    "COD": 510,
+    "DESCRIPCION": "ROSTICERO NATURAL P/ESCALOPA"
+  },
+  {
+    "COD": 517,
+    "DESCRIPCION": "ALA MARINADA (COCINA)"
+  },
+  {
+    "COD": 518,
+    "DESCRIPCION": "ESCALOPA 150 GRS"
+  },
+  {
+    "COD": 519,
+    "DESCRIPCION": "CHORIZO DE POLLO"
+  },
+  {
+    "COD": 520,
+    "DESCRIPCION": "GRUPO FUNCIONAL B (CPO)"
+  },
+  {
+    "COD": 521,
+    "DESCRIPCION": "GRUPO FUNCIONAL B (CPO)"
+  },
+  {
+    "COD": 522,
+    "DESCRIPCION": "MOLLEJA DE POLLO CONGELADA"
+  },
+  {
+    "COD": 526,
+    "DESCRIPCION": "POLLO FCO. DE IMP."
+  },
+  {
+    "COD": 527,
+    "DESCRIPCION": "NUGGET"
+  },
+  {
+    "COD": 528,
+    "DESCRIPCION": "HAMBURGUESA"
+  },
+  {
+    "COD": 529,
+    "DESCRIPCION": "CHICKEN FRIES"
+  },
+  {
+    "COD": 530,
+    "DESCRIPCION": "PALOMITA"
+  },
+  {
+    "COD": 531,
+    "DESCRIPCION": "TENDER"
+  },
+  {
+    "COD": 532,
+    "DESCRIPCION": "PIERNA CON MUSLO ESC CONGELADO"
+  },
+  {
+    "COD": 533,
+    "DESCRIPCION": "PIERNA C/MUSLO 1A.FRESCA CHICA"
+  },
+  {
+    "COD": 534,
+    "DESCRIPCION": "PIERNA C/MUSLO C.AMER.CONGELAD"
+  },
+  {
+    "COD": 535,
+    "DESCRIPCION": "PECHUGA FRESCA DE 1A. CHICA"
+  },
+  {
+    "COD": 536,
+    "DESCRIPCION": "RABADILLA WAL-MART"
+  },
+  {
+    "COD": 537,
+    "DESCRIPCION": "COBRO POR EMPAQUE"
+  },
+  {
+    "COD": 538,
+    "DESCRIPCION": "PECHUGA SIN PIEL"
+  },
+  {
+    "COD": 539,
+    "DESCRIPCION": "PIERNA Y MUSLO SIN PIEL"
+  },
+  {
+    "COD": 540,
+    "DESCRIPCION": "PIERNA Y MUSLO C/AMER.S/PIEL"
+  },
+  {
+    "COD": 543,
+    "DESCRIPCION": "PECHUGA S/HUESO GALLINA C."
+  },
+  {
+    "COD": 544,
+    "DESCRIPCION": "PIERNA S/HUESO GALLINA C."
+  },
+  {
+    "COD": 545,
+    "DESCRIPCION": "CABEZA SIN PESCUEZO"
+  },
+  {
+    "COD": 546,
+    "DESCRIPCION": "PASTA DE GALLINA FRESCA"
+  },
+  {
+    "COD": 547,
+    "DESCRIPCION": "ALAS DE GALLINA"
+  },
+  {
+    "COD": 548,
+    "DESCRIPCION": "PESCUESO DE GALLINA"
+  },
+  {
+    "COD": 549,
+    "DESCRIPCION": "ROSTICERO CONGELADO XX GRANDE"
+  },
+  {
+    "COD": 550,
+    "DESCRIPCION": "GALLINA CONGELADA IQF"
+  },
+  {
+    "COD": 553,
+    "DESCRIPCION": "FILETE PECHUGA CONG.150GRSVIPS"
+  },
+  {
+    "COD": 554,
+    "DESCRIPCION": "FILETE PECHUGA CONG.180GRSVIPS"
+  },
+  {
+    "COD": 555,
+    "DESCRIPCION": "ROSTICERO 1.6-1.7 NATURAL TOTE"
+  },
+  {
+    "COD": 556,
+    "DESCRIPCION": "ROSTICERO 2A CHICA 0.5-0.7"
+  },
+  {
+    "COD": 600,
+    "DESCRIPCION": "CARCAZA DE GALLINA"
+  },
+  {
+    "COD": 601,
+    "DESCRIPCION": "POLLO CONGEL. 1.7-2.2 NATURAL"
+  },
+  {
+    "COD": 602,
+    "DESCRIPCION": "POLLO MARINADO 1.1 A 1.2"
+  },
+  {
+    "COD": 604,
+    "DESCRIPCION": "POLLINAZA HIDROLIZADA"
+  },
+  {
+    "COD": 605,
+    "DESCRIPCION": "POLLINAZA H 7.5 MELAZA ENSAC."
+  },
+  {
+    "COD": 606,
+    "DESCRIPCION": "POLLINAZA H C/MELAZA 7.5 GRAN"
+  },
+  {
+    "COD": 607,
+    "DESCRIPCION": "PESCUEZO DE POLLO"
+  },
+  {
+    "COD": 608,
+    "DESCRIPCION": "PIERNA/MUSLO C/AMERICAN GRANEL"
+  },
+  {
+    "COD": 609,
+    "DESCRIPCION": "ROST FCO 2A GDE NAT 1.4-1.5"
+  },
+  {
+    "COD": 610,
+    "DESCRIPCION": "MAQUINARIA INDUSTRIAL"
+  },
+  {
+    "COD": 611,
+    "DESCRIPCION": "PECHUGA CORTE AMER. CONG. IQF"
+  },
+  {
+    "COD": 613,
+    "DESCRIPCION": "ROST.NAT. 1.8-2.2"
+  },
+  {
+    "COD": 614,
+    "DESCRIPCION": "ROST. NAT. 2.2-2.5"
+  },
+  {
+    "COD": 615,
+    "DESCRIPCION": "PIERNA CON MUSLO SIN HUESO"
+  },
+  {
+    "COD": 616,
+    "DESCRIPCION": "PIERNA Y MUSLO DE GALLINA FRES"
+  },
+  {
+    "COD": 617,
+    "DESCRIPCION": "PECHUGA DE GALLINA FRESCA"
+  },
+  {
+    "COD": 618,
+    "DESCRIPCION": "PASTA DE GALLINA CONGELADA"
+  },
+  {
+    "COD": 619,
+    "DESCRIPCION": "POLLO ROSTICERO EN KG"
+  },
+  {
+    "COD": 620,
+    "DESCRIPCION": "ROST.NATURAL SECO 1.7 A 2.5 EN"
+  },
+  {
+    "COD": 621,
+    "DESCRIPCION": "MILANESA EMPANIZADA POLLO CONG"
+  },
+  {
+    "COD": 622,
+    "DESCRIPCION": "FAJITA EMPANIZADA POLLO CONGEL"
+  },
+  {
+    "COD": 623,
+    "DESCRIPCION": "P/M CARNE ESPECIAL DE AVE C."
+  },
+  {
+    "COD": 624,
+    "DESCRIPCION": "PECHUGA CARNE ESPECIAL D/AVE C"
+  },
+  {
+    "COD": 625,
+    "DESCRIPCION": "MILANESA POLLO CONGELADA IQF"
+  },
+  {
+    "COD": 626,
+    "DESCRIPCION": "POLLO ROST.INYECTADO 1.1 A 1.3"
+  },
+  {
+    "COD": 627,
+    "DESCRIPCION": "FAJITA AL CHILE LIMON FRESCA"
+  },
+  {
+    "COD": 628,
+    "DESCRIPCION": "POLLO INYEC.MARINADO 1.6 A 1.7"
+  },
+  {
+    "COD": 629,
+    "DESCRIPCION": "RECORTE PECHUGA GALLINA CONG."
+  },
+  {
+    "COD": 630,
+    "DESCRIPCION": "MUSLO DESHUESADO AL HABANERO"
+  },
+  {
+    "COD": 631,
+    "DESCRIPCION": "MUSLO DESHUESADO AL JALAPENO"
+  },
+  {
+    "COD": 632,
+    "DESCRIPCION": "HUACAL MARINADO"
+  },
+  {
+    "COD": 633,
+    "DESCRIPCION": "GALLINA FRESCA REPRODUCTORA 1A"
+  },
+  {
+    "COD": 634,
+    "DESCRIPCION": "GALLINA FRESCA REPRODUCTORA 2A"
+  },
+  {
+    "COD": 635,
+    "DESCRIPCION": "HUEVERA DE GALLINA CONGELADA"
+  },
+  {
+    "COD": 636,
+    "DESCRIPCION": "SUPER MERCADO CONGELADO"
+  },
+  {
+    "COD": 638,
+    "DESCRIPCION": "POLLO CHESTER SIN ALAS"
+  },
+  {
+    "COD": 639,
+    "DESCRIPCION": "ROSTICERO CONGELADO XX CHICO M"
+  },
+  {
+    "COD": 640,
+    "DESCRIPCION": "ROSTICERO CONGELADO MENOS 700"
+  },
+  {
+    "COD": 643,
+    "DESCRIPCION": "PIERNA Y MUSLO \"B\""
+  },
+  {
+    "COD": 644,
+    "DESCRIPCION": "SUPER MERCADO CHICO CONGELADO"
+  },
+  {
+    "COD": 645,
+    "DESCRIPCION": "PIERNA CON MUSLO ESC GDE CONG."
+  },
+  {
+    "COD": 646,
+    "DESCRIPCION": "PASTA DE POLLO CONGELADA"
+  },
+  {
+    "COD": 647,
+    "DESCRIPCION": "PASTA DE AVE CONGELADA"
+  },
+  {
+    "COD": 648,
+    "DESCRIPCION": "TARIMADO Y EMPLAYADO"
+  },
+  {
+    "COD": 650,
+    "DESCRIPCION": "GALLINA FRESCA DE 2A"
+  },
+  {
+    "COD": 651,
+    "DESCRIPCION": "ROSTICERO NATURAL EN TOTES 2.2"
+  },
+  {
+    "COD": 652,
+    "DESCRIPCION": "ROSTICERO HIDRATADO XX GDE 2.2"
+  },
+  {
+    "COD": 653,
+    "DESCRIPCION": "PEDACERIA DE PECHUGA CONGELADA"
+  },
+  {
+    "COD": 654,
+    "DESCRIPCION": "PECHUGA ESCALDADA"
+  },
+  {
+    "COD": 655,
+    "DESCRIPCION": "ROSTICERO NATURAL FRESCO DE 2."
+  },
+  {
+    "COD": 656,
+    "DESCRIPCION": "ROSTICERO NATURAL FRESCO DE 3."
+  },
+  {
+    "COD": 657,
+    "DESCRIPCION": "MUSLO DESHUESADO C/PIEL P/MARI"
+  },
+  {
+    "COD": 661,
+    "DESCRIPCION": "MUSLO HABANERO"
+  },
+  {
+    "COD": 662,
+    "DESCRIPCION": "MUSLO JALAPENO"
+  },
+  {
+    "COD": 663,
+    "DESCRIPCION": "MUSLO FILETEADO C/H CHILE LIMO"
+  },
+  {
+    "COD": 664,
+    "DESCRIPCION": "FAJITA HABANERO"
+  },
+  {
+    "COD": 665,
+    "DESCRIPCION": "FAJITA JALAPENO"
+  },
+  {
+    "COD": 666,
+    "DESCRIPCION": "ESCALOPA EMBOLSADA 600 GRS"
+  },
+  {
+    "COD": 668,
+    "DESCRIPCION": "PECHUGA CONGELADA IQF"
+  },
+  {
+    "COD": 670,
+    "DESCRIPCION": "SUPERMERCADO 1.1-1.3"
+  },
+  {
+    "COD": 671,
+    "DESCRIPCION": "SUPERMERCADO 1.1-1.4"
+  },
+  {
+    "COD": 672,
+    "DESCRIPCION": "SUPERMERCADO 1.4-1.7"
+  },
+  {
+    "COD": 673,
+    "DESCRIPCION": "SUPERMERCADO 1.7-2.2"
+  },
+  {
+    "COD": 674,
+    "DESCRIPCION": "SUPERMERCADO 2.2-2.5"
+  },
+  {
+    "COD": 675,
+    "DESCRIPCION": "PIERNA Y MUSLO C. AMER. EMPAQU"
+  },
+  {
+    "COD": 676,
+    "DESCRIPCION": "PECHUGA C. AMER. EMPAQUETADA"
+  },
+  {
+    "COD": 680,
+    "DESCRIPCION": "MOLLEJA CONGELADA IQF"
+  },
+  {
+    "COD": 689,
+    "DESCRIPCION": "PECHUGA C. A. P. CH."
+  },
+  {
+    "COD": 690,
+    "DESCRIPCION": "MILANESA PECH APLANA"
+  },
+  {
+    "COD": 691,
+    "DESCRIPCION": "PIERNA MUSLO CA PINTADO FRESCO"
+  },
+  {
+    "COD": 692,
+    "DESCRIPCION": "PECHUGA CA PINTADO FRESCO"
+  },
+  {
+    "COD": 693,
+    "DESCRIPCION": "HIGADO CONGELADO"
+  },
+  {
+    "COD": 694,
+    "DESCRIPCION": "PM DESHUESADA IQF INY"
+  },
+  {
+    "COD": 695,
+    "DESCRIPCION": "PECHUGA DESHUESADA IQF INY"
+  },
+  {
+    "COD": 696,
+    "DESCRIPCION": "PIERNA CON MUSLO EMPACADO"
+  },
+  {
+    "COD": 697,
+    "DESCRIPCION": "PIERNA/MUSLO AMERICANO EMPACAD"
+  },
+  {
+    "COD": 698,
+    "DESCRIPCION": "PIERNA DE POLLO EMPACADO"
+  },
+  {
+    "COD": 699,
+    "DESCRIPCION": "MUSLO DE POLLO EMPACADO"
+  },
+  {
+    "COD": 700,
+    "DESCRIPCION": "PECHUGA DE POLLO EMPACADO"
+  },
+  {
+    "COD": 701,
+    "DESCRIPCION": "PECHUGA DESHUESADA EMPACADO"
+  },
+  {
+    "COD": 702,
+    "DESCRIPCION": "PECHUGA CORTE AMERICANO EMPACA"
+  },
+  {
+    "COD": 703,
+    "DESCRIPCION": "PECHUGA APLANADA EMPACADO"
+  },
+  {
+    "COD": 704,
+    "DESCRIPCION": "ALAS DE POLLO EMPACADO"
+  },
+  {
+    "COD": 705,
+    "DESCRIPCION": "PECHUGA CORTE ANATOMICA LIGHT"
+  },
+  {
+    "COD": 706,
+    "DESCRIPCION": "PECHUGA CORTE AMERICANA LIGHT"
+  },
+  {
+    "COD": 707,
+    "DESCRIPCION": "PIERNA BATE LIGHT EMPACADO"
+  },
+  {
+    "COD": 708,
+    "DESCRIPCION": "MUSLO DE POLLO LIGHT EMPACADO"
+  },
+  {
+    "COD": 709,
+    "DESCRIPCION": "PYM CORTE ANATOMICA LIGHT EMPA"
+  },
+  {
+    "COD": 710,
+    "DESCRIPCION": "PYM CORTE AMERICA LIGHT EMPACA"
+  },
+  {
+    "COD": 711,
+    "DESCRIPCION": "MUSLO FILETEADO MARINADO S P/L"
+  },
+  {
+    "COD": 712,
+    "DESCRIPCION": "MUSLO MARINADO SABOR ARRACHERA"
+  },
+  {
+    "COD": 713,
+    "DESCRIPCION": "CABEZA ESCALDADA GRANDE"
+  },
+  {
+    "COD": 714,
+    "DESCRIPCION": "PECHUGA ESC. CONG. IQF"
+  },
+  {
+    "COD": 715,
+    "DESCRIPCION": "PIERNA Y MUSLO ESC. CONG. IQF."
+  },
+  {
+    "COD": 716,
+    "DESCRIPCION": "PECHUGA ESC SIN HUESO/PIEL 10%"
+  },
+  {
+    "COD": 717,
+    "DESCRIPCION": "MILANESA DE PECHUGA DE POLLO"
+  },
+  {
+    "COD": 721,
+    "DESCRIPCION": "JAMON AMERICANO"
+  },
+  {
+    "COD": 722,
+    "DESCRIPCION": "P/M CORTE AMERICANO CONGELADO"
+  },
+  {
+    "COD": 723,
+    "DESCRIPCION": "CORAZON DE POLLO"
+  },
+  {
+    "COD": 724,
+    "DESCRIPCION": "HUESO DE PASTA DE POLLO CONG."
+  },
+  {
+    "COD": 725,
+    "DESCRIPCION": "HUESO DE PASTA DE GALLINA CONG"
+  },
+  {
+    "COD": 735,
+    "DESCRIPCION": "PIERNA MARINADA HABANERO"
+  },
+  {
+    "COD": 736,
+    "DESCRIPCION": "PIERNA MARINADA JALAPENO"
+  },
+  {
+    "COD": 738,
+    "DESCRIPCION": "PIERNA BATE HABANERO"
+  },
+  {
+    "COD": 739,
+    "DESCRIPCION": "HUACAL CONGELADO IQF"
+  },
+  {
+    "COD": 741,
+    "DESCRIPCION": "PECHUGA NATURAL GRANDE"
+  },
+  {
+    "COD": 742,
+    "DESCRIPCION": "PECHUGA NATURAL MEDIANA"
+  },
+  {
+    "COD": 743,
+    "DESCRIPCION": "PECHUGA NATURAL CHICA"
+  },
+  {
+    "COD": 744,
+    "DESCRIPCION": "PIERNA CON MUSLO NAT GRANDE"
+  },
+  {
+    "COD": 745,
+    "DESCRIPCION": "PIERNA CON MUSLO NAT MEDIANA"
+  },
+  {
+    "COD": 746,
+    "DESCRIPCION": "(Registro incompleto)"
+  },
+  {
+    "COD": 990,
+    "DESCRIPCION": "POLLO A DESTAZAR FRESCO ESCALD"
+  },
+  {
+    "COD": 991,
+    "DESCRIPCION": "POLLO A DESTAZAR FRESCO"
+  },
+  {
+    "COD": 992,
+    "DESCRIPCION": "PECHUGA DE 1A P/ESCALOPA"
+  },
+  {
+    "COD": 993,
+    "DESCRIPCION": "PECHUGA DE 2A P/ESCALOPA"
+  },
+  {
+    "COD": 994,
+    "DESCRIPCION": "2A. GRANDE NATURAL \"C\""
+  },
+  {
+    "COD": 995,
+    "DESCRIPCION": "2A. GRANDE NATURAL \"B\""
+  },
+  {
+    "COD": 996,
+    "DESCRIPCION": "2A. GRANDE NATIURAL \"A\""
+  },
+  {
+    "COD": 997,
+    "DESCRIPCION": "ALA PARA DETALLAR"
+  },
+  {
+    "COD": 998,
+    "DESCRIPCION": "PECHUGA FRESCA 1RA (GRANEL)"
+  },
+  {
+    "COD": 9000,
+    "DESCRIPCION": "CESTAS"
+  },
+  {
+    "COD": 9001,
+    "DESCRIPCION": "TAPAS"
+  },
+  {
+    "COD": 9002,
+    "DESCRIPCION": "DECOMISO GALLINA"
+  },
+  {
+    "COD": 9003,
+    "DESCRIPCION": "DECOMISO POLLO"
+  }
+]

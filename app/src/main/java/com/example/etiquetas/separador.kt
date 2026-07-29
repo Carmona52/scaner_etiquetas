@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 
 data class Etiqueta(
     val claveProducto: String,
+    val etiquetaEscaneada: String? = null,
     val piezas: String? = null,
     val kilos: String,
     val lote: String? = null,
@@ -29,16 +30,18 @@ data class Etiqueta(
     val notas: String,
 
     val zona: String? = null,
-    val camara: String? = null
+    val camara: String? = null,
+    val tipoMovimiento: String? = null
 )
 
-class separador {
+class Separador {
 
     fun etiquetaseparation(text: String): Etiqueta? {
         return when (text.length) {
             27 -> etiquetaslargas(text)
             26 -> etiquetasmedianas(text)
             25 -> etiquetasVeintiyCinco(text)
+            24 -> longitudVeintiCuatro(text)
             23 -> etiquetascorta(text)
             else -> {
                 Log.d("separador", "Longitud no reconocida: ${text.length}")
@@ -171,6 +174,37 @@ class separador {
             notas = "Faltan Segundos"
         )
     }
+
+    private fun longitudVeintiCuatro(text: String): Etiqueta? {
+        return Etiqueta(
+            claveProducto = text.substring(0, 3),
+
+            piezas = text.substring(4,6),
+            kilos = text.substring(5, 10),
+
+            identificador = text[23].toString(),
+
+            lote = text.substring(20,23),
+
+            //obtener valores de la hora
+            segDigHora = text[10].toString(),
+            primDigMin = text[3].toString(),
+            segDigMin = text[20].toString(),
+            primDigSeg = text[21].toString(),
+            segDigSeg = text[12].toString(),
+
+            //valores para fecha
+            ultDigAnio = text[15].toString(),
+            primDigMes = text[19].toString(),
+            segDigMes = text[14].toString(),
+            primDigDia = text[18].toString(),
+            segDigDia = text[16].toString(),
+
+
+            notas = "Esta Etiqueta no cuenta con: Fecha y lote completo"
+
+        )
+    }
     private fun etiquetasVeintiyCinco(text: String): Etiqueta? {
         return Etiqueta(
             claveProducto = text.substring(0, 3),
@@ -204,6 +238,8 @@ class separador {
 
         return Etiqueta(
             claveProducto = text.substring(0, 3),
+
+
 
             kilos = text.substring(6, 10),
 

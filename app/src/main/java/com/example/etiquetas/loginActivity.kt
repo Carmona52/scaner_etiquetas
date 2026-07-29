@@ -1,13 +1,13 @@
 package com.example.etiquetas
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import com.example.etiquetas.databinding.FragmentLoginActivityBinding
+import java.io.File
 
 class LoginActivity : Fragment() {
 
@@ -25,8 +25,6 @@ class LoginActivity : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
-
         binding.loginBtn.setOnClickListener {
             login()
         }
@@ -36,7 +34,7 @@ class LoginActivity : Fragment() {
         val fragmenScan = EscanearEtiquetaFragment()
 
         val userName = binding.userName.text
-        val tempFile = createTempFile(prefix = "userName", suffix = ".tmp")
+        val tempFile = File.createTempFile("userName", ".tmp", requireContext().cacheDir)
         tempFile.writeText(userName.toString())
         userNameCache.userNameRoute = tempFile.absolutePath
 
