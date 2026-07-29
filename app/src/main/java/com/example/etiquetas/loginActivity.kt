@@ -31,7 +31,7 @@ class LoginActivity : Fragment() {
     }
 
     private fun login() {
-        val fragmenScan = EscanearEtiquetaFragment()
+        val fragmentScan = EscanearEtiquetaFragment()
 
         val userName = binding.userName.text
         val tempFile = File.createTempFile("userName", ".tmp", requireContext().cacheDir)
@@ -41,7 +41,7 @@ class LoginActivity : Fragment() {
 
         if (userName.toString().length != 0) {
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragmenScan)
+                .replace(R.id.fragment_container, fragmentScan)
                 .addToBackStack(null)
                 .commit()
         } else {

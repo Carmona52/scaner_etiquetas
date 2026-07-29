@@ -30,6 +30,11 @@ data class EtiquetaGuardada(
     val notas: String
 )
 
+data class productosGuardados(
+    val claveProducto: String,
+    val descripcion: String
+)
+
 class DataBase(private val context: Context) {
 
     private val driver = BundledSQLiteDriver()
@@ -105,6 +110,22 @@ class DataBase(private val context: Context) {
         }
     }
 
+    fun obtenerProductos(): List<productosGuardados> {
+        val resultado = mutableListOf<productosGuardados>()
+
+        connection.prepare("SELECT claveProducto, descripcion FROM Articulos").use { stmt ->
+            while (stmt.step()) {
+                resultado.add(
+                    productosGuardados(
+                        claveProducto = stmt.getText(0),
+                        descripcion = stmt.getText(1)
+                    )
+                )
+            }
+        }
+        return resultado
+    }
+
     fun upsertArticulo(claveProducto: String, descripcion: String) {
         connection.prepare(
             "INSERT INTO Articulos (claveProducto, descripcion) VALUES (?, ?) " +
@@ -161,6 +182,7 @@ class DataBase(private val context: Context) {
                 stmt.bindText(14, e.notas)
                 stmt.step()
             }
+            Log.i("Succes", "Se inserto correctamente")
             true
         } catch (ex: Exception) {
             Log.e("DataBase", "Error al insertar etiqueta [$etiquetaEscaneada]", ex)
@@ -212,7 +234,8 @@ class DataBase(private val context: Context) {
         camara: String? = null,
         turno: String? = null,
         movimiento: String? = null,
-        fechaISO: String? = null
+        fechaInicioISO: String? = null,
+        fechaFinISO: String? = null
     ): List<EtiquetaGuardada> {
         val condiciones = mutableListOf<String>()
         val valores = mutableListOf<String>()
@@ -229,8 +252,18 @@ class DataBase(private val context: Context) {
         if (movimiento != null) {
             condiciones.add("e.tipoMovimiento = ?"); valores.add(movimiento)
         }
-        if (fechaISO != null) {
-            condiciones.add("e.fechaEscaneo LIKE ?"); valores.add("$fechaISO%")
+
+
+        if (fechaInicioISO != null && fechaFinISO != null) {
+            condiciones.add("e.fechaEscaneo >= ? AND e.fechaEscaneo <= ?")
+            valores.add("${fechaInicioISO}T00:00:00")
+            valores.add("${fechaFinISO}T23:59:59")
+        } else if (fechaInicioISO != null) {
+            condiciones.add("e.fechaEscaneo >= ?")
+            valores.add("${fechaInicioISO}T00:00:00")
+        } else if (fechaFinISO != null) {
+            condiciones.add("e.fechaEscaneo <= ?")
+            valores.add("${fechaFinISO}T23:59:59")
         }
 
         val whereClause =
@@ -240,13 +273,13 @@ class DataBase(private val context: Context) {
 
         connection.prepare(
             """
-    SELECT e.id, e.etiquetaEscaneada, e.claveProducto, a.descripcion, e.piezas, e.kilos, e.lote,
-           e.fecha, e.hora, e.fechaEscaneo, e.zona, e.camara, e.turno, e.tipoMovimiento, e.escaneadoPor, e.notas
-    FROM Etiquetas e
-    INNER JOIN Articulos a ON e.claveProducto = a.claveProducto
-    $whereClause
-    ORDER BY e.id ASC
-    """.trimIndent()
+            SELECT e.id, e.etiquetaEscaneada, e.claveProducto, a.descripcion, e.piezas, e.kilos, e.lote,
+                   e.fecha, e.hora, e.fechaEscaneo, e.zona, e.camara, e.turno, e.tipoMovimiento, e.escaneadoPor, e.notas
+            FROM Etiquetas e
+            INNER JOIN Articulos a ON e.claveProducto = a.claveProducto
+            $whereClause
+            ORDER BY e.id ASC
+            """.trimIndent()
         ).use { stmt ->
             valores.forEachIndexed { index, valor -> stmt.bindText(index + 1, valor) }
 
@@ -290,6 +323,51 @@ class DataBase(private val context: Context) {
         }
 
         return ultimoMovimiento
+    }
+
+
+    fun obtenerCamaraActual(etiquetaEscaneada: String): String? {
+        var camaraActual: String? = null
+
+        connection.prepare(
+            """
+        SELECT e.camara
+        FROM Etiquetas e
+        INNER JOIN (
+            SELECT camara, MAX(id) AS maxId
+            FROM Etiquetas
+            WHERE etiquetaEscaneada = ?
+            GROUP BY camara
+        ) ultimo ON e.id = ultimo.maxId
+        WHERE e.tipoMovimiento = 'Entrada'
+        LIMIT 1
+        """.trimIndent()
+        ).use { stmt ->
+            stmt.bindText(1, etiquetaEscaneada)
+            if (stmt.step()) {
+                camaraActual = stmt.getText(0)
+            }
+        }
+
+        return camaraActual
+    }
+
+    fun hacerCorteDeInventario() {
+        connection.execSQL(
+            """
+        DELETE FROM Etiquetas
+        WHERE id NOT IN (
+            SELECT e.id
+            FROM Etiquetas e
+            INNER JOIN (
+                SELECT etiquetaEscaneada, camara, MAX(id) AS maxId
+                FROM Etiquetas
+                GROUP BY etiquetaEscaneada, camara
+            ) ultimo ON e.id = ultimo.maxId
+            WHERE e.tipoMovimiento = 'Entrada'
+        )
+        """.trimIndent()
+        )
     }
 
     fun limpiarEtiquetas() {

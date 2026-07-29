@@ -18,7 +18,7 @@
     <string name="por_favor_ingrese_su_nombre">Por favor, ingrese su nombre</string>
     <string name="iniciar_sesion">Iniciar sesion</string>
     <string name="logo_de_patsa">Logo de Patsa</string>
-    <string name="generateReport">Generar Reporte General </string>
+    <string name="generateReport">Generar Corte de Producción </string>
     <string name="gen_report_day">Generar Reporte Del Día</string>
     <string name="select_camara">Seleccione la Cámara</string>
     <string name="select_turno">Seleccione El Turno</string>

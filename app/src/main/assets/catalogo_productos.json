@@ -8,6 +8,10 @@
     "DESCRIPCION": "MERCADO FRESCO 2DA"
   },
   {
+    "COD": 3,
+    "DESCRIPCION": "DECOMISO POLLO"
+  },
+  {
     "COD": 4,
     "DESCRIPCION": "ROSTICERO FRESCO DE 1A (ALMAC)"
   },
@@ -98,6 +102,9 @@
   {
     "COD": 28,
     "DESCRIPCION": "ROSTICERO NATURAL 1.00-1.10"
+  }, {
+    "COD":34,
+    "DESCRIPCION": "ALA P/LAVAR"
   },
   {
     "COD": 36,

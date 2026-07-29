@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -208,32 +209,36 @@ class EscanearEtiquetaFragment : Fragment() {
         }
 
         val ultimoMovimiento = db.obtenerUltimoMovimiento(etiqueta, camara)
+        val camaraActual = db.obtenerCamaraActual(etiqueta)
 
         when (movimiento) {
             "Entrada" -> {
-                if (ultimoMovimiento == "Entrada") {
+                if (camaraActual != null) {
+                    val mensaje = if (camaraActual == camara) {
+                        "Esta etiqueta ya está dentro de esta cámara — falta registrar su salida"
+                    } else {
+                        "Esta etiqueta está dentro de $camaraActual — debe salir antes de entrar a $camara"
+                    }
                     requireActivity().runOnUiThread {
-                        Toast.makeText(
-                            requireContext(),
-                            "Esta etiqueta ya está dentro de una cámara — falta registrar su salida",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        Toast.makeText(requireContext(), mensaje, Toast.LENGTH_LONG).show()
                     }
                     return
                 }
             }
 
             "Salida" -> {
-                if (ultimoMovimiento != "Entrada") {
+                if (camaraActual != camara) {
+                    val mensaje = if (camaraActual == null) {
+                        "Esta etiqueta no tiene una entrada registrada"
+                    } else {
+                        "Esta etiqueta está dentro de $camaraActual, no de $camara"
+                    }
                     requireActivity().runOnUiThread {
-                        Toast.makeText(
-                            requireContext(),
-                            "Esta etiqueta no tiene una entrada registrada",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        Toast.makeText(requireContext(), mensaje, Toast.LENGTH_LONG).show()
                     }
                     return
                 }
+
             }
         }
 
@@ -271,11 +276,17 @@ class EscanearEtiquetaFragment : Fragment() {
 
         if (!insertado) {
             requireActivity().runOnUiThread {
-                Toast.makeText(requireContext(), "Error al guardar la etiqueta", Toast.LENGTH_SHORT)
+                Toast.makeText(
+                    requireContext(),
+                    "Etiqueta Anomala, ver a Administrador",
+                    Toast.LENGTH_SHORT
+                )
                     .show()
             }
             return
         }
+
+        Log.i("Etiqueta", "${etiqueta.length} ")
 
         requireActivity().runOnUiThread {
             actualizarTablaFiltrada()
@@ -286,24 +297,6 @@ class EscanearEtiquetaFragment : Fragment() {
         db.eliminarUltimaEtiqueta()
         actualizarTablaFiltrada()
         Toast.makeText(requireContext(), "Última etiqueta eliminada", Toast.LENGTH_SHORT).show()
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun agregarFila(e: Etiqueta) {
-        val fila = TableRow(requireContext())
-        val valores =
-            listOf(e.claveProducto, e.piezas, e.kilos, e.lote, construirFecha(e), construirHora(e))
-
-        valores.forEach { texto ->
-            val textView = TextView(requireContext()).apply {
-                layoutParams = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
-                setPadding(6, 6, 6, 6)
-                text = texto
-            }
-            fila.addView(textView)
-        }
-
-        binding.tableLayout.addView(fila)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
