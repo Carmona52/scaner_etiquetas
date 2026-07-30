@@ -30,13 +30,12 @@ class reportesActivity : Fragment() {
     private var camaraSeleccionada: String? = null
     private var turnoSeleccionado: String? = null
     private var movimientoSeleccionado: String? = null
-    private var fechaSeleccionadaISO: String? = null
     private var fechaInicioISO: String? = null
     private var fechaFinISO: String? = null
 
     private val camaras = arrayOf(
-        "Camara 1", "Camara 2", "Camara 3", "Camara 4", "Camara 5",
-        "Camara 6", "Camara 7", "Camara 8", "Camara 9"
+        "Camara de Fresco 1", "Camara 2", "Camara 3", "Camara 4", "Camara 5",
+        "Camara 6", "Camara de Fresco 7", "Camara 8", "Camara 9"
     )
     private val turnos = arrayOf("Turno 1", "Turno 2", "Turno 3")
     private val movimientos = arrayOf("Entrada", "Salida", "Ambos")
@@ -61,6 +60,7 @@ class reportesActivity : Fragment() {
         binding.generarReporteGeneral.setOnClickListener { generarReporteGeneral() }
         binding.generarReporte.setOnClickListener { generarReporteEspecifico() }
         binding.catalogoProducts.setOnClickListener { verCatalogoProductos() }
+        binding.seeAllEtiquetas.setOnClickListener { verAllEtiquetas() }
 
         binding.btnFechaInicio.setOnClickListener {
             mostrarSelectorFecha { year, month, day ->
@@ -154,7 +154,8 @@ class reportesActivity : Fragment() {
         val datos = db.obtenerReporte()
 
         if (datos.isEmpty()) {
-            Toast.makeText(requireContext(), "No hay movimientos registrados", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "No hay movimientos registrados", Toast.LENGTH_SHORT)
+                .show()
             return
         }
 
@@ -275,6 +276,13 @@ class reportesActivity : Fragment() {
     fun verCatalogoProductos() {
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, SelectProductos())
+            .addToBackStack(null)
+            .commit()
+    }
+
+    fun verAllEtiquetas() {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, seeAllEtiquetasFragment())
             .addToBackStack(null)
             .commit()
     }

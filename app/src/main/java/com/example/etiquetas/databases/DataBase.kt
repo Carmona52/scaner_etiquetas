@@ -126,6 +126,45 @@ class DataBase(private val context: Context) {
         return resultado
     }
 
+    fun obtenerEtiquetas(): List<EtiquetaGuardada> {
+        val resultado = mutableListOf<EtiquetaGuardada>()
+
+        connection.prepare(
+            """
+        SELECT e.id, e.etiquetaEscaneada, e.claveProducto, a.descripcion, e.piezas, e.kilos, e.lote,
+               e.fecha, e.hora, e.fechaEscaneo, e.zona, e.camara, e.turno, e.tipoMovimiento, e.escaneadoPor, e.notas
+        FROM Etiquetas e
+        INNER JOIN Articulos a ON e.claveProducto = a.claveProducto
+        ORDER BY e.fechaEscaneo ASC
+        """.trimIndent()
+        ).use { stmt ->
+            while (stmt.step()) {
+                resultado.add(
+                    EtiquetaGuardada(
+                        id = stmt.getLong(0),
+                        etiquetaEscaneada = stmt.getText(1),
+                        claveProducto = stmt.getText(2),
+                        descripcionArticulo = stmt.getText(3),
+                        piezas = stmt.getText(4),
+                        kilos = stmt.getText(5),
+                        lote = stmt.getText(6),
+                        fecha = stmt.getText(7),
+                        hora = stmt.getText(8),
+                        fechaEscaneo = stmt.getText(9),
+                        zona = stmt.getText(10),
+                        camara = stmt.getText(11),
+                        turno = stmt.getText(12),
+                        tipoMovimiento = stmt.getText(13),
+                        escaneadoPor = stmt.getText(14),
+                        notas = stmt.getText(15)
+                    )
+                )
+            }
+        }
+        return resultado
+    }
+
+
     fun upsertArticulo(claveProducto: String, descripcion: String) {
         connection.prepare(
             "INSERT INTO Articulos (claveProducto, descripcion) VALUES (?, ?) " +

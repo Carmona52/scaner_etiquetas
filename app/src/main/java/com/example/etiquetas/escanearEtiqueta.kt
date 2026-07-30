@@ -35,10 +35,10 @@ class EscanearEtiquetaFragment : Fragment() {
     private lateinit var db: DataBase
 
     private val zonaCamaraMap = mapOf(
-        "Zona 1" to listOf("Camara 1", "Camara 3"),
+        "Zona 1" to listOf("Camara de Fresco 1", "Camara 3"),
         "Zona 2" to listOf("Camara 2", "Camara 4"),
         "Zona 3" to listOf("Camara 5"),
-        "Zona 4" to listOf("Camara 6", "Camara 7"),
+        "Zona 4" to listOf("Camara 6", "Camara de Fresco 7"),
         "Zona 5" to listOf("Camara 8", "Camara 9")
     )
 
@@ -328,12 +328,23 @@ class EscanearEtiquetaFragment : Fragment() {
 
     private fun agregarFilaDesdeDB(e: EtiquetaGuardada) {
         val fila = TableRow(requireContext())
-        val valores = listOf(e.claveProducto, e.piezas, e.kilos, e.lote, e.fecha, e.hora)
+        val valores = listOf(
+            e.claveProducto,
+            e.descripcionArticulo,
+            e.piezas,
+            e.kilos,
+            e.lote,
+            e.fecha,
+            e.hora
+        )
 
         valores.forEach { texto ->
             val textView = TextView(requireContext()).apply {
-                layoutParams = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
-                setPadding(6, 6, 6, 6)
+                layoutParams = TableRow.LayoutParams(
+                    TableRow.LayoutParams.WRAP_CONTENT,
+                    TableRow.LayoutParams.WRAP_CONTENT
+                )
+                setPadding(20,20,20,20)
                 text = texto
             }
             fila.addView(textView)

@@ -97,7 +97,7 @@ class Separador {
 
         if (claveProducto == "1100") {
             return Etiqueta(
-                claveProducto = text.substring(0, 4),
+                claveProducto = text.substring(0, 3),
 
                 piezas = text.substring(5, 8),
 

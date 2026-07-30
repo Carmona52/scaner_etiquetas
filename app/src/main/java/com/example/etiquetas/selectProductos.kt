@@ -31,8 +31,12 @@ class SelectProductos : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         db = DataBase(requireContext())
         ActualizarTabla()
+        inicializarEventos()
     }
 
+    private fun inicializarEventos(){
+        binding.addProduct.setOnClickListener { agregarProducto() }
+    }
     private fun ActualizarTabla() {
         val productos = db.obtenerProductos()
 
@@ -58,6 +62,13 @@ class SelectProductos : Fragment() {
         }
         binding.tableLayout.addView(fila)
     }
+
+    private fun agregarProducto(){
+
+
+    }
+
+
 
     override fun onDestroyView() {
         super.onDestroyView()

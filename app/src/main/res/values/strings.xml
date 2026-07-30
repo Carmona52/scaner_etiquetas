@@ -24,5 +24,13 @@
     <string name="select_turno">Seleccione El Turno</string>
     <string name="select_mov">Seleccione el Movimiento</string>
     <string name="gen_specific_report">Generar Reporte Específico</string>
+    <string name="gen_general_report">Genere un reporte con todos los movimientos registrados hasta el momento.</string>
+    <string name="o">O</string>
+    <string name="fecha_inicio">Fecha Inicio</string>
+    <string name="fecha_fin">Fecha Fin</string>
+    <string name="ver_etiquetas_escaneadas">Ver Etiquetas Escaneadas</string>
+    <string name="ver_cat_logo_de_productos">Ver Catálogo de Productos</string>
+    <string name="catalogo_de_productos">Catalogo de Productos</string>
+    <string name="all_scan_etiquetas">Ver todas las etiquetas Escaneadas</string>
 
 </resources>

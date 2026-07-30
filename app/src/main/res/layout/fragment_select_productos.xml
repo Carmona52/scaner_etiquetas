@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="10dp"
         android:layout_marginTop="15dp"
-        android:text="Catalogo de Productos"
+        android:text="@string/catalogo_de_productos"
         android:textAlignment="center"
         android:textColor="@color/black"
         android:textSize="30sp"
