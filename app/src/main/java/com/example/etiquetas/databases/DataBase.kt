@@ -317,7 +317,7 @@ class DataBase(private val context: Context) {
             FROM Etiquetas e
             INNER JOIN Articulos a ON e.claveProducto = a.claveProducto
             $whereClause
-            ORDER BY e.id ASC
+            ORDER BY e.id DESC
             """.trimIndent()
         ).use { stmt ->
             valores.forEachIndexed { index, valor -> stmt.bindText(index + 1, valor) }
