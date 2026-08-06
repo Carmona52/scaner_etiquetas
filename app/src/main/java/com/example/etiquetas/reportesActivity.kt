@@ -27,26 +27,12 @@ class ReportesActivity : Fragment() {
     private val binding get() = _binding!!
     private lateinit var db: DataBase
 
-    private var camaraSeleccionada: String? = null
+    private var camaraSeleccionadaId: Int? = null
     private var turnoSeleccionado: String? = null
     private var movimientoSeleccionado: String? = null
     private var fechaInicioISO: String? = null
     private var fechaFinISO: String? = null
 
-    private val camaras = arrayOf(
-        "Camara de Fresco 1",
-        "Camara de Fresco 2",
-        "Camara de Fresco 3",
-        "Camara de Fresco 4",
-        "Camara de Fresco 7",
-        "Camara de Congelacion 1",
-        "Camara de Congelacion 2",
-        "Camara de Congelacion 3",
-        "Camara de Conservacion 1",
-        "Camara de Conservacion 2",
-        "Camara de Conservacion 3",
-        "Camara de Conservacion 4"
-    )
     private val turnos = arrayOf("Turno 1", "Turno 2", "Turno 3")
     private val movimientos = arrayOf("Entrada", "Salida", "Inventario", "Ambos")
 
@@ -101,27 +87,21 @@ class ReportesActivity : Fragment() {
     }
 
     private fun configurarSelectores() {
-        val listaCamaras = camaras.toList()
+        val listaCamaras = db.obtenerTodasLasCamaras()
         val listaTurnos = turnos.toList()
         val listaMovimientos = movimientos.toList()
 
-        val adapterCamara =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listaCamaras)
+        val adapterCamara = ArrayAdapter(
+            requireContext(), android.R.layout.simple_spinner_item, listaCamaras.map { it.nombreCamara }
+        )
         adapterCamara.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.selectorCamara.adapter = adapterCamara
-        binding.selectorCamara.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    camaraSeleccionada = listaCamaras[position]
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>) {}
+        binding.selectorCamara.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                camaraSeleccionadaId = listaCamaras[position].id
             }
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
 
         val adapterMovimiento =
             ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listaMovimientos)
@@ -209,7 +189,7 @@ class ReportesActivity : Fragment() {
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun generarReporteEspecifico() {
         val datos = db.obtenerReporteFiltrado(
-            camara = camaraSeleccionada,
+            idCamara = camaraSeleccionadaId,
             turno = turnoSeleccionado,
             movimiento = movimientoSeleccionado,
             fechaInicioISO = fechaInicioISO,

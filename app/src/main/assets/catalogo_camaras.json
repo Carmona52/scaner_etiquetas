@@ -1,0 +1,74 @@
+[
+  {
+    "idZona": 1,
+    "numCamara": 1,
+    "nombreCamara": "Camara de Fresco 1",
+    "descripcion": "Cámaras que están a una temperatura de  4 a 10 grados centigrados"
+  },
+  {
+    "idZona": 1,
+    "numCamara": 2,
+    "nombreCamara": "Camara de Fresco 2",
+    "descripcion": "Cámaras que están a una temperatura de  4 a 10 grados centigrados"
+  },
+  {
+    "idZona": 1,
+    "numCamara": 3,
+    "nombreCamara": "Camara de Fresco 3",
+    "descripcion": "Cámaras que están a una temperatura de  4 a 10 grados centigrados"
+  },
+  {
+    "idZona": 1,
+    "numCamara": 4,
+    "nombreCamara": "Camara de Fresco 4",
+    "descripcion": "Cámaras que están a una temperatura de  4 a 10 grados centigrados"
+  },
+  {
+    "idZona": 1,
+    "numCamara": 5,
+    "nombreCamara": "Camara de Fresco 7",
+    "descripcion": "Cámaras que están a una temperatura de  4 a 10 grados centigrados"
+  },
+  {
+    "idZona": 2,
+    "numCamara": 6,
+    "nombreCamara": "Camara de Congelado 1",
+    "descripcion": "Cámaras que están a una temperatura de 0 a 4 grados centigrados"
+  },
+  {
+    "idZona": 2,
+    "numCamara": 7,
+    "nombreCamara": "Camara de Congelado 2",
+    "descripcion": "Cámaras que están a una temperatura de 0 a 4 grados centigrados"
+  },
+  {
+    "idZona": 2,
+    "numCamara": 8,
+    "nombreCamara": "Camara de Congelado 3",
+    "descripcion": "Cámaras que están a una temperatura de 0 a 4 grados centigrados"
+  },
+  {
+    "idZona": 3,
+    "numCamara": 9,
+    "nombreCamara": "Camara de Conservación 1",
+    "descripcion": "Cámaras que están a una temperatura menor de 0 grados centigrados"
+  },
+  {
+    "idZona": 3,
+    "numCamara": 10,
+    "nombreCamara": "Camara de Conservación 2",
+    "descripcion": "Cámaras que están a una temperatura menor de 0 grados centigrados"
+  },
+  {
+    "idZona": 3,
+    "numCamara": 11,
+    "nombreCamara": "Camara de Conservación 3",
+    "descripcion": "Cámaras que están a una temperatura menor de 0 grados centigrados"
+  },
+  {
+    "idZona": 3,
+    "numCamara": 12,
+    "nombreCamara": "Camara de Conservación 4",
+    "descripcion": "Cámaras que están a una temperatura menor de 0 grados centigrados"
+  }
+]

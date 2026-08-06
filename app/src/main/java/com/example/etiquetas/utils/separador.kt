@@ -41,6 +41,7 @@ data class Etiqueta(
 
 @RequiresApi(Build.VERSION_CODES.O)
 class Separador {
+    val anioFull: String = LocalDate.now().year.toString().substring(0,3)
     val anio: String get() = LocalDateTime.now().year.toString().takeLast(2)
     val dia: String get() = LocalDate.now().dayOfYear.toString().padStart(3, '0')
 
@@ -65,8 +66,17 @@ class Separador {
     }
 
 
-    private fun etiquetaslargas(text: String): Etiqueta? {
+    private fun etiquetaslargas(text: String): Etiqueta {
 
+        val anioFull = "${anioFull}${text[15]}"
+        Log.i("Anio", "$anioFull")
+        val digitDia = "${text[18]}${text[16]}"
+        val digitMes = "${text[19]}${text[14]}"
+
+        val getJulianDay =
+            LocalDate.of(anioFull.toInt(), digitMes.toInt(), digitDia.toInt()).dayOfYear.toString()
+
+        val loteFinal = "${anioFull.takeLast(2)}$getJulianDay"
 
         val claveProducto = text.substring(0, 4)
         Log.d("separador", "Clave Producto: $claveProducto")
@@ -79,7 +89,7 @@ class Separador {
 
                 kilos = text.substring(8, 13),
 
-                lote = lote,
+                lote = loteFinal,
                 numEmpaque = text.substring(22, 26),
 
                 identificador = text[26].toString(),
@@ -113,7 +123,7 @@ class Separador {
 
                 kilos = text.substring(9, 14),
 
-                lote = lote,
+                lote = loteFinal,
                 numEmpaque = text.substring(22, 26),
 
                 identificador = text[26].toString(),
@@ -144,7 +154,7 @@ class Separador {
 
             kilos = text.substring(8, 13),
 
-            lote = lote,
+            lote = loteFinal,
             numEmpaque = text.substring(22, 26),
 
             identificador = text[26].toString(),
@@ -169,7 +179,14 @@ class Separador {
 
     }
 
-    private fun etiquetasmedianas(text: String): Etiqueta? {
+    private fun etiquetasmedianas(text: String): Etiqueta {
+        val digitDia = "${text[18]}${text[16]}"
+        val digitMes = "${text[19]}${text[14]}"
+
+        val getJulianDay =
+            LocalDate.of(anioFull.toInt(), digitMes.toInt(), digitDia.toInt()).dayOfYear.toString()
+
+        val loteFinal = "$anio$getJulianDay"
         return Etiqueta(
             claveProducto = text.substring(0, 3),
 
@@ -178,7 +195,7 @@ class Separador {
             kilos = text.substring(8, 13),
 
             numEmpaque = text.substring(21, 25),
-            lote = lote,
+            lote = loteFinal,
 
             identificador = text[25].toString(),
 
@@ -199,7 +216,14 @@ class Separador {
         )
     }
 
-    private fun etiquetasVeintiyCinco(text: String): Etiqueta? {
+    private fun etiquetasVeintiyCinco(text: String): Etiqueta {
+        val digitDia = "${text[17]}${text[15]}"
+        val digitMes = "${text[18]}${text[13]}"
+
+        val getJulianDay =
+            LocalDate.of(anioFull.toInt(), digitMes.toInt(), digitDia.toInt()).dayOfYear.toString()
+
+        val loteFinal = "$anio$getJulianDay"
         return Etiqueta(
             claveProducto = text.substring(0, 3),
 
@@ -207,7 +231,7 @@ class Separador {
 
             kilos = text.substring(7, 12),
 
-            lote = lote,
+            lote = loteFinal,
 
             numEmpaque = text.substring(20, 24),
 
@@ -231,7 +255,7 @@ class Separador {
         )
     }
 
-    private fun longitudVeintiCuatro(text: String): Etiqueta? {
+    private fun longitudVeintiCuatro(text: String): Etiqueta {
         return Etiqueta(
             claveProducto = text.substring(0, 3),
 
@@ -263,7 +287,7 @@ class Separador {
         )
     }
 
-    private fun etiquetascorta(text: String): Etiqueta? {
+    private fun etiquetascorta(text: String): Etiqueta {
         val claveProducto = text.substring(0, 3)
 
         if (claveProducto == "624") {
@@ -327,7 +351,7 @@ class Separador {
         )
     }
 
-    private fun longitudVeintidos(text: String): Etiqueta? {
+    private fun longitudVeintidos(text: String): Etiqueta {
         return Etiqueta(
             claveProducto = text.substring(0, 3),
             piezas = text.substring(4, 7),
@@ -353,11 +377,9 @@ class Separador {
             notas = "Esta Etiqueta no cuenta con: Fecha ni Hora completas"
 
         )
-        Log.i("Long", "Longitud22")
-
     }
 
-    private fun longitudVeintiuno(text: String): Etiqueta? {
+    private fun longitudVeintiuno(text: String): Etiqueta {
         return Etiqueta(
             claveProducto = text.substring(0, 3),
 
@@ -383,7 +405,7 @@ class Separador {
         )
     }
 
-    private fun longitudVeinte(text: String): Etiqueta? {
+    private fun longitudVeinte(text: String): Etiqueta {
         return Etiqueta(
             claveProducto = text.substring(0, 3),
 
@@ -407,7 +429,7 @@ class Separador {
         )
     }
 
-    private fun longitudDiecinueve(text: String): Etiqueta? {
+    private fun longitudDiecinueve(text: String): Etiqueta {
         return Etiqueta(
             claveProducto = text.substring(0, 3),
 

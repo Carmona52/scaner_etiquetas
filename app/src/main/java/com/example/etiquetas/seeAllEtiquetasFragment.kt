@@ -11,8 +11,10 @@ import android.widget.ArrayAdapter
 import android.widget.TableRow
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import com.example.etiquetas.database.CamaraGuardada
 import com.example.etiquetas.database.DataBase
 import com.example.etiquetas.database.EtiquetaGuardada
+import com.example.etiquetas.database.ZonaGuardada
 import com.example.etiquetas.databinding.FragmentSeeAllEtiquetasBinding
 import java.time.format.DateTimeFormatter
 
@@ -21,33 +23,10 @@ class SeeAllEtiquetasFragment : Fragment() {
     private var _binding: FragmentSeeAllEtiquetasBinding? = null
     private val binding get() = _binding!!
 
-    private var zonaSeleccionada: String? = null
-    private var camaraSeleccionada: String? = null
+    private var zonaSeleccionada: ZonaGuardada? = null
+    private var camaraSeleccionada: CamaraGuardada? = null
 
-    private val zonaCamaraMap = mapOf(
-        "Camara Fresco" to listOf(
-            "Camara de Fresco 1",
-            "Camara de Fresco 2",
-            "Camara de Fresco 3",
-            "Camara de Fresco 4",
-            "Camara de Fresco 7"
-        ),
-        "Camara Congelado" to listOf(
-            "Camara de Congelacion 1", "Camara de Congelacion 2", "Camara de Congelacion 3"
-        ),
-        "Camara Conservacion" to listOf(
-            "Camara de Conservacion 1",
-            "Camara de Conservacion 2",
-            "Camara de Conservacion 3",
-            "Camara de Conservacion 4"
-        ),
-    )
     private lateinit var db: DataBase
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -60,27 +39,29 @@ class SeeAllEtiquetasFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         db = DataBase(requireContext())
-        actualizarTablaFiltrada()
         configurarSelectores()
-
+        actualizarTablaFiltrada()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-
     private fun configurarSelectores() {
-        val zonas = zonaCamaraMap.keys.toList()
+        val zonas = db.obtenerZonas()
 
-        val adapterZona =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, zonas)
+        val adapterZona = ArrayAdapter(
+            requireContext(), android.R.layout.simple_spinner_item, zonas.map { it.nombreZona }
+        )
         adapterZona.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerZona.adapter = adapterZona
 
         binding.spinnerZona.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
-                parent: AdapterView<*>, view: View?, position: Int, id: Long
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
             ) {
                 zonaSeleccionada = zonas[position]
-                actualizarCamaras(zonaSeleccionada!!)
+                actualizarCamaras(zonaSeleccionada!!.id)
                 actualizarTablaFiltrada()
             }
 
@@ -89,9 +70,13 @@ class SeeAllEtiquetasFragment : Fragment() {
 
         binding.spinnerCamara.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
-                parent: AdapterView<*>, view: View?, position: Int, id: Long
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
             ) {
-                val camaras = zonaCamaraMap[zonaSeleccionada] ?: emptyList()
+                val camaras =
+                    zonaSeleccionada?.let { db.obtenerCamarasPorZona(it.id) } ?: emptyList()
                 if (position < camaras.size) {
                     camaraSeleccionada = camaras[position]
                     actualizarTablaFiltrada()
@@ -101,24 +86,27 @@ class SeeAllEtiquetasFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-
         if (zonas.isNotEmpty()) {
-            actualizarCamaras(zonas[0])
+            zonaSeleccionada = zonas[0]
+            actualizarCamaras(zonas[0].id)
         }
     }
 
-    private fun actualizarCamaras(zona: String) {
-        val camaras = zonaCamaraMap[zona] ?: emptyList()
-        val adapterCamara =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, camaras)
+    private fun actualizarCamaras(idZona: Int) {
+        val camaras = db.obtenerCamarasPorZona(idZona)
+        val adapterCamara = ArrayAdapter(
+            requireContext(), android.R.layout.simple_spinner_item, camaras.map { it.nombreCamara }
+        )
         adapterCamara.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerCamara.adapter = adapterCamara
+        camaraSeleccionada = camaras.firstOrNull()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun actualizarTablaFiltrada() {
         val resultados = db.obtenerReporteFiltrado(
-            camara = camaraSeleccionada
+            idZona = zonaSeleccionada?.id,
+            idCamara = camaraSeleccionada?.id
         )
 
         val cantidadFilas = binding.tableLayout.childCount

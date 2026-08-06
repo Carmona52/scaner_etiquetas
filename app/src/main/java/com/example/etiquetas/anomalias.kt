@@ -20,7 +20,4 @@ class anomalias : Fragment() {
         return inflater.inflate(R.layout.fragment_anomalias, container, false)
     }
 
-    companion object {
-
-    }
 }

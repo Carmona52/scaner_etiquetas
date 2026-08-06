@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,41 +25,24 @@ import com.example.etiquetas.database.DataBase
 import com.example.etiquetas.database.EtiquetaGuardada
 import android.media.AudioManager
 import android.media.ToneGenerator
+import com.example.etiquetas.database.CamaraGuardada
+import com.example.etiquetas.database.ZonaGuardada
 import com.example.etiquetas.utils.Etiqueta
 import com.example.etiquetas.utils.Separador
 import com.example.etiquetas.utils.userNameCache
+import com.example.etiquetas.utils.MakeSounds
 
 class EscanearEtiquetaFragment : Fragment() {
     private var _binding: EscanearEtiquetaFragmentBinding? = null
     private val binding get() = _binding!!
-    private var zonaSeleccionada: String? = null
-    private var camaraSeleccionada: String? = null
+    private var zonaSeleccionada: ZonaGuardada? = null
+    private var camaraSeleccionada: CamaraGuardada? = null
     private var turnoSeleccionado: String? = null
     private var movimientoSeleccionado: String? = null
 
     private var toneGenerator: ToneGenerator? = null
+    private var soundHelper: MakeSounds? = null
     private lateinit var db: DataBase
-
-    private val zonaCamaraMap = mapOf(
-        "Camara Fresco" to listOf(
-            "Camara de Fresco 1",
-            "Camara de Fresco 2",
-            "Camara de Fresco 3",
-            "Camara de Fresco 4",
-            "Camara de Fresco 7"
-        ),
-        "Camara Congelado" to listOf(
-            "Camara de Congelacion 1",
-            "Camara de Congelacion 2",
-            "Camara de Congelacion 3"
-        ),
-        "Camara Conservacion" to listOf(
-            "Camara de Conservacion 1",
-            "Camara de Conservacion 2",
-            "Camara de Conservacion 3",
-            "Camara de Conservacion 4"
-        ),
-    )
 
     private val turnos = arrayOf("Turno 1", "Turno 2", "Turno 3")
 
@@ -105,7 +87,7 @@ class EscanearEtiquetaFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         db = DataBase(requireContext())
         toneGenerator = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100)
-
+        soundHelper = MakeSounds(toneGenerator)
         configurarSelectores()
         configurarEventos()
 
@@ -138,6 +120,7 @@ class EscanearEtiquetaFragment : Fragment() {
         super.onDestroyView()
         toneGenerator?.release()
         toneGenerator = null
+        soundHelper = null
         _binding = null
     }
 
@@ -150,12 +133,12 @@ class EscanearEtiquetaFragment : Fragment() {
 
 
     private fun configurarSelectores() {
-        val zonas = zonaCamaraMap.keys.toList()
+        val zonas = db.obtenerZonas()
         val listaTurnos = turnos.toList()
         val listaMovimientos = movimientos.toList()
 
-        val adapterZona =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, zonas)
+        val adapterZona = ArrayAdapter(
+            requireContext(), android.R.layout.simple_spinner_item, zonas.map { it.nombreZona })
         adapterZona.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerZona.adapter = adapterZona
 
@@ -164,7 +147,7 @@ class EscanearEtiquetaFragment : Fragment() {
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
                 zonaSeleccionada = zonas[position]
-                actualizarCamaras(zonaSeleccionada!!)
+                actualizarCamaras(zonaSeleccionada!!.id)
                 actualizarTablaFiltrada()
             }
 
@@ -175,7 +158,8 @@ class EscanearEtiquetaFragment : Fragment() {
             override fun onItemSelected(
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
-                val camaras = zonaCamaraMap[zonaSeleccionada] ?: emptyList()
+                val camaras =
+                    zonaSeleccionada?.let { db.obtenerCamarasPorZona(it.id) } ?: emptyList()
                 if (position < camaras.size) {
                     camaraSeleccionada = camaras[position]
                     actualizarTablaFiltrada()
@@ -189,14 +173,12 @@ class EscanearEtiquetaFragment : Fragment() {
             ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listaTurnos)
         adapterTurno.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.turnoSpinner.adapter = adapterTurno
-
         binding.turnoSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
                 turnoSeleccionado = listaTurnos[position]
                 actualizarTablaFiltrada()
-
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
@@ -206,30 +188,30 @@ class EscanearEtiquetaFragment : Fragment() {
             ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listaMovimientos)
         adapterMovimiento.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.tipoEntrada.adapter = adapterMovimiento
-
         binding.tipoEntrada.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
                 movimientoSeleccionado = listaMovimientos[position]
                 actualizarTablaFiltrada()
-
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
         if (zonas.isNotEmpty()) {
-            actualizarCamaras(zonas[0])
+            zonaSeleccionada = zonas[0]
+            actualizarCamaras(zonas[0].id)
         }
     }
 
-    private fun actualizarCamaras(zona: String) {
-        val camaras = zonaCamaraMap[zona] ?: emptyList()
-        val adapterCamara =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, camaras)
+    private fun actualizarCamaras(idZona: Int) {
+        val camaras = db.obtenerCamarasPorZona(idZona)
+        val adapterCamara = ArrayAdapter(
+            requireContext(), android.R.layout.simple_spinner_item, camaras.map { it.nombreCamara })
         adapterCamara.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerCamara.adapter = adapterCamara
+        camaraSeleccionada = camaras.firstOrNull()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -240,7 +222,7 @@ class EscanearEtiquetaFragment : Fragment() {
         val movimiento = movimientoSeleccionado
 
         if (zona == null || camara == null || turno == null || movimiento == null) {
-            reproducirSonidoError()
+            soundHelper?.makeBadSound()
             requireActivity().runOnUiThread {
                 Toast.makeText(
                     requireContext(),
@@ -251,16 +233,17 @@ class EscanearEtiquetaFragment : Fragment() {
             return
         }
 
-        val camaraActual = db.obtenerCamaraActual(etiqueta)
+        val idCamaraActual = db.obtenerCamaraActualId(etiqueta)
 
         when (movimiento) {
             "Entrada" -> {
-                if (camaraActual != null) {
-                    reproducirSonidoError()
-                    val mensaje = if (camaraActual == camara) {
+                if (idCamaraActual != null) {
+                    soundHelper?.makeBadSound()
+                    val nombreCamaraActual = db.obtenerNombreCamara(idCamaraActual) ?: "otra cámara"
+                    val mensaje = if (idCamaraActual == camara.id) {
                         "Esta etiqueta ya está dentro de esta cámara — falta registrar su salida"
                     } else {
-                        "Esta etiqueta está dentro de $camaraActual — debe salir antes de entrar a $camara"
+                        "Esta etiqueta está dentro de $nombreCamaraActual — debe salir antes de entrar a ${camara.nombreCamara}"
                     }
                     requireActivity().runOnUiThread {
                         Toast.makeText(requireContext(), mensaje, Toast.LENGTH_LONG).show()
@@ -270,28 +253,29 @@ class EscanearEtiquetaFragment : Fragment() {
             }
 
             "Salida" -> {
-                if (camaraActual != camara) {
-                    reproducirSonidoError()
-                    val mensaje = if (camaraActual == null) {
+                if (idCamaraActual != camara.id) {
+                    soundHelper?.makeBadSound()
+                    val mensaje = if (idCamaraActual == null) {
                         "Esta etiqueta no tiene una entrada registrada"
                     } else {
-                        "Esta etiqueta está dentro de $camaraActual, no de $camara"
+                        val nombreCamaraActual =
+                            db.obtenerNombreCamara(idCamaraActual) ?: "otra cámara"
+                        "Esta etiqueta está dentro de $nombreCamaraActual, no de ${camara.nombreCamara}"
                     }
                     requireActivity().runOnUiThread {
                         Toast.makeText(requireContext(), mensaje, Toast.LENGTH_LONG).show()
                     }
                     return
                 } else {
-                    reproducirSonido()
+                    soundHelper?.makeGoodSound()
                     requireActivity().runOnUiThread {
                         Toast.makeText(
                             requireContext(),
-                            "A completado el ciclo correctamente",
+                            "Ha completado el ciclo correctamente",
                             Toast.LENGTH_LONG
                         ).show()
                     }
                 }
-
             }
         }
 
@@ -299,7 +283,7 @@ class EscanearEtiquetaFragment : Fragment() {
         val etiquetaParseada = util.etiquetaseparation(etiqueta)
 
         if (etiquetaParseada == null) {
-            reproducirSonidoError()
+            soundHelper?.makeBadSound()
             requireActivity().runOnUiThread {
                 Toast.makeText(
                     requireContext(),
@@ -320,8 +304,8 @@ class EscanearEtiquetaFragment : Fragment() {
             e = etiquetaParseada,
             fecha = fecha,
             hora = hora,
-            zona = zona,
-            camara = camara,
+            idZona = zona.id,
+            idCamara = camara.id,
             turno = turno,
             escaneadoPor = userName,
             etiquetaEscaneada = etiqueta,
@@ -329,7 +313,7 @@ class EscanearEtiquetaFragment : Fragment() {
         )
 
         if (!insertado) {
-            reproducirSonidoError()
+            soundHelper?.makeBadSound()
             requireActivity().runOnUiThread {
                 Toast.makeText(
                     requireContext(), "Etiqueta Anomala, ver a Administrador", Toast.LENGTH_SHORT
@@ -338,7 +322,7 @@ class EscanearEtiquetaFragment : Fragment() {
             return
         }
 
-        Log.i("Etiqueta", "${etiqueta.length} ")
+        soundHelper?.makeGoodSound()
 
         requireActivity().runOnUiThread {
             actualizarTablaFiltrada()
@@ -364,8 +348,8 @@ class EscanearEtiquetaFragment : Fragment() {
 
     private fun actualizarTablaFiltrada() {
         val resultados = db.obtenerReporteFiltrado(
-            zona = zonaSeleccionada,
-            camara = camaraSeleccionada,
+            idZona = zonaSeleccionada?.id,
+            idCamara = camaraSeleccionada?.id,
             turno = turnoSeleccionado,
             movimiento = movimientoSeleccionado
         )
@@ -406,15 +390,6 @@ class EscanearEtiquetaFragment : Fragment() {
     private fun verAnomalias() {
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, ReportesActivity()).addToBackStack(null).commit()
-    }
-
-    private fun reproducirSonidoError() {
-        toneGenerator?.startTone(ToneGenerator.TONE_PROP_NACK, 550)
-    }
-
-    private fun reproducirSonido() {
-        toneGenerator?.startTone(ToneGenerator.TONE_PROP_NACK, 350)
-        toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP, 550)
     }
 
     companion object {

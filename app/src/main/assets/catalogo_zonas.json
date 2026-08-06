@@ -1,0 +1,17 @@
+[
+  {
+    "numZona": 1,
+    "nombreZona": "Fresco",
+    "descripcion": "Esta zona aloja a todas las cámaras de fresco"
+  },
+  {
+    "numZona": 2,
+    "nombreZona": "Congelado",
+    "descripcion": "Esta zona aloja a todas las cámaras de congelado"
+  },
+  {
+    "numZona": 3,
+    "nombreZona": "Conservacion",
+    "descripcion": "Esta zona aloja a todas las cámaras de conservación"
+  }
+]
