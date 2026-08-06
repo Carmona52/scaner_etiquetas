@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".reportesActivity">
+    tools:context=".ReportesActivity"
+    android:fitsSystemWindows="true">
 
     <TextView
         android:layout_width="match_parent"
@@ -186,7 +187,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginHorizontal="10dp"
-        android:layout_marginBottom="40dp"
         android:orientation="horizontal">
 
         <Button

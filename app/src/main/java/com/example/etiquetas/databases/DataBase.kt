@@ -7,7 +7,7 @@ import androidx.annotation.RequiresApi
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
-import com.example.etiquetas.Etiqueta
+import com.example.etiquetas.utils.Etiqueta
 import org.json.JSONArray
 import java.time.LocalDateTime
 
@@ -27,7 +27,8 @@ data class EtiquetaGuardada(
     val turno: String,
     val tipoMovimiento: String,
     val escaneadoPor: String,
-    val notas: String
+    val notas: String,
+    val numEmpaque: String? = null
 )
 
 data class productosGuardados(
@@ -60,6 +61,30 @@ class DataBase(private val context: Context) {
 
         connection.execSQL(
             """
+                CREATE TABLE IF NOT EXISTS Zonas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                numZona INTEGER NOT NULL,
+                nombreZona TEXT NOT NULL,
+                descripcion TEXT
+                )
+            """.trimIndent()
+        )
+
+        connection.execSQL(
+            """
+                CREATE TABLE IF NOT EXISTS Camaras (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                idZona INTEGER NOT NULL, 
+                numCamara INTEGER NOT NULL,
+                nombreCamara TEXT NOT NULL,
+                descripcion TEXT,
+                FOREIGN KEY (idZona) REFERENCES Zonas(id)
+                )
+            """.trimIndent()
+        )
+
+        connection.execSQL(
+            """
         CREATE TABLE IF NOT EXISTS Etiquetas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             etiquetaEscaneada TEXT NOT NULL,
@@ -67,6 +92,7 @@ class DataBase(private val context: Context) {
             piezas TEXT,
             kilos TEXT NOT NULL,
             lote TEXT,
+            numEmpaque TEXT,
             fecha TEXT NOT NULL,
             hora TEXT NOT NULL,
             fechaEscaneo TEXT NOT NULL,
@@ -83,6 +109,13 @@ class DataBase(private val context: Context) {
 
         connection.execSQL(
             "CREATE INDEX IF NOT EXISTS idx_etiqueta_camara ON Etiquetas(etiquetaEscaneada, camara)"
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS idx_camara ON Camaras(numCamara)"
+        )
+
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS idx_zona ON Zonas(numZona)"
         )
     }
 
@@ -113,16 +146,16 @@ class DataBase(private val context: Context) {
     fun obtenerProductos(): List<productosGuardados> {
         val resultado = mutableListOf<productosGuardados>()
 
-        connection.prepare("SELECT claveProducto, descripcion FROM Articulos").use { stmt ->
-            while (stmt.step()) {
-                resultado.add(
-                    productosGuardados(
-                        claveProducto = stmt.getText(0),
-                        descripcion = stmt.getText(1)
+        connection.prepare("SELECT claveProducto, descripcion FROM Articulos ORDER BY claveProducto ASC")
+            .use { stmt ->
+                while (stmt.step()) {
+                    resultado.add(
+                        productosGuardados(
+                            claveProducto = stmt.getText(0), descripcion = stmt.getText(1)
+                        )
                     )
-                )
+                }
             }
-        }
         return resultado
     }
 
@@ -132,7 +165,7 @@ class DataBase(private val context: Context) {
         connection.prepare(
             """
         SELECT e.id, e.etiquetaEscaneada, e.claveProducto, a.descripcion, e.piezas, e.kilos, e.lote,
-               e.fecha, e.hora, e.fechaEscaneo, e.zona, e.camara, e.turno, e.tipoMovimiento, e.escaneadoPor, e.notas
+               e.fecha, e.hora, e.fechaEscaneo, e.zona, e.camara, e.turno, e.tipoMovimiento, e.escaneadoPor, e.notas, e.numEmpaque
         FROM Etiquetas e
         INNER JOIN Articulos a ON e.claveProducto = a.claveProducto
         ORDER BY e.fechaEscaneo ASC
@@ -156,7 +189,8 @@ class DataBase(private val context: Context) {
                         turno = stmt.getText(12),
                         tipoMovimiento = stmt.getText(13),
                         escaneadoPor = stmt.getText(14),
-                        notas = stmt.getText(15)
+                        notas = stmt.getText(15),
+                        numEmpaque = stmt.getText(16)
                     )
                 )
             }
@@ -167,8 +201,7 @@ class DataBase(private val context: Context) {
 
     fun upsertArticulo(claveProducto: String, descripcion: String) {
         connection.prepare(
-            "INSERT INTO Articulos (claveProducto, descripcion) VALUES (?, ?) " +
-                    "ON CONFLICT(claveProducto) DO UPDATE SET descripcion = excluded.descripcion"
+            "INSERT INTO Articulos (claveProducto, descripcion) VALUES (?, ?) " + "ON CONFLICT(claveProducto) DO UPDATE SET descripcion = excluded.descripcion"
         ).use { stmt ->
             stmt.bindText(1, claveProducto)
             stmt.bindText(2, descripcion)
@@ -201,8 +234,8 @@ class DataBase(private val context: Context) {
             connection.prepare(
                 """
             INSERT INTO Etiquetas
-            (etiquetaEscaneada, claveProducto, piezas, kilos, lote, fecha, hora, fechaEscaneo, zona, camara, turno, tipoMovimiento, escaneadoPor, notas)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (etiquetaEscaneada, claveProducto, piezas, kilos, lote, fecha, hora, fechaEscaneo, zona, camara, turno, tipoMovimiento, escaneadoPor, notas, numEmpaque)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
             """.trimIndent()
             ).use { stmt ->
                 stmt.bindText(1, etiquetaEscaneada)
@@ -219,6 +252,7 @@ class DataBase(private val context: Context) {
                 stmt.bindText(12, tipoMovimiento)
                 stmt.bindText(13, escaneadoPor)
                 stmt.bindText(14, e.notas)
+                stmt.bindText(15, e.numEmpaque ?: "")
                 stmt.step()
             }
             Log.i("Succes", "Se inserto correctamente")
@@ -235,9 +269,9 @@ class DataBase(private val context: Context) {
         connection.prepare(
             """
         SELECT e.id, e.etiquetaEscaneada, e.claveProducto, a.descripcion, e.piezas, e.kilos, e.lote,
-               e.fecha, e.hora, e.fechaEscaneo, e.zona, e.camara, e.turno, e.tipoMovimiento, e.escaneadoPor, e.notas
+               e.fecha, e.hora, e.fechaEscaneo, e.zona, e.camara, e.turno, e.tipoMovimiento, e.escaneadoPor, e.notas, e.numEmpaque
         FROM Etiquetas e
-        INNER JOIN Articulos a ON e.claveProducto = a.claveProducto
+        LEFT JOIN Articulos a ON e.claveProducto = a.claveProducto
         ORDER BY e.id ASC
         """.trimIndent()
         ).use { stmt ->
@@ -259,7 +293,8 @@ class DataBase(private val context: Context) {
                         turno = stmt.getText(12),
                         tipoMovimiento = stmt.getText(13),
                         escaneadoPor = stmt.getText(14),
-                        notas = stmt.getText(15)
+                        notas = stmt.getText(15),
+                        numEmpaque = stmt.getText(16)
                     )
                 )
             }
@@ -313,9 +348,9 @@ class DataBase(private val context: Context) {
         connection.prepare(
             """
             SELECT e.id, e.etiquetaEscaneada, e.claveProducto, a.descripcion, e.piezas, e.kilos, e.lote,
-                   e.fecha, e.hora, e.fechaEscaneo, e.zona, e.camara, e.turno, e.tipoMovimiento, e.escaneadoPor, e.notas
+                   e.fecha, e.hora, e.fechaEscaneo, e.zona, e.camara, e.turno, e.tipoMovimiento, e.escaneadoPor, e.notas, e.numEmpaque
             FROM Etiquetas e
-            INNER JOIN Articulos a ON e.claveProducto = a.claveProducto
+            LEFT JOIN Articulos a ON e.claveProducto = a.claveProducto
             $whereClause
             ORDER BY e.id DESC
             """.trimIndent()
@@ -340,30 +375,14 @@ class DataBase(private val context: Context) {
                         turno = stmt.getText(12),
                         tipoMovimiento = stmt.getText(13),
                         escaneadoPor = stmt.getText(14),
-                        notas = stmt.getText(15)
+                        notas = stmt.getText(15),
+                        numEmpaque = stmt.getText(16)
                     )
                 )
             }
         }
         return resultado
     }
-
-    fun obtenerUltimoMovimiento(etiquetaEscaneada: String, camara: String): String? {
-        var ultimoMovimiento: String? = null
-
-        connection.prepare(
-            "SELECT tipoMovimiento FROM Etiquetas WHERE etiquetaEscaneada = ? AND camara = ? ORDER BY id DESC LIMIT 1"
-        ).use { stmt ->
-            stmt.bindText(1, etiquetaEscaneada)
-            stmt.bindText(2, camara)
-            if (stmt.step()) {
-                ultimoMovimiento = stmt.getText(0)
-            }
-        }
-
-        return ultimoMovimiento
-    }
-
 
     fun obtenerCamaraActual(etiquetaEscaneada: String): String? {
         var camaraActual: String? = null

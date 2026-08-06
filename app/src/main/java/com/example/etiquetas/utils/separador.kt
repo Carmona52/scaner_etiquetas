@@ -1,7 +1,10 @@
-package com.example.etiquetas
+package com.example.etiquetas.utils
 
+
+import android.os.Build
 import android.util.Log
-import android.widget.Toast
+import androidx.annotation.RequiresApi
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class Etiqueta(
@@ -10,6 +13,7 @@ data class Etiqueta(
     val piezas: String? = "0",
     val kilos: String,
     val lote: String? = "0",
+    val numEmpaque: String,
 
     //Valores para Fecha
     val ultDigAnio: String? = "0",
@@ -35,8 +39,12 @@ data class Etiqueta(
     val tipoMovimiento: String? = "0"
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 class Separador {
+    val anio: String get() = LocalDateTime.now().year.toString().takeLast(2)
+    val dia: String get() = LocalDate.now().dayOfYear.toString().padStart(3, '0')
 
+    val lote: String get() = "$anio$dia"
     fun etiquetaseparation(text: String): Etiqueta? {
         return when (text.length) {
             27 -> etiquetaslargas(text)
@@ -59,18 +67,20 @@ class Separador {
 
     private fun etiquetaslargas(text: String): Etiqueta? {
 
+
         val claveProducto = text.substring(0, 4)
         Log.d("separador", "Clave Producto: $claveProducto")
 
         if (claveProducto == "0033") {
             return Etiqueta(
-                claveProducto = text.substring(0, 3),
+                claveProducto = "9003",
 
                 piezas = text.substring(5, 7),
 
                 kilos = text.substring(8, 13),
 
-                lote = text.substring(22, 26),
+                lote = lote,
+                numEmpaque = text.substring(22, 26),
 
                 identificador = text[26].toString(),
 
@@ -103,7 +113,8 @@ class Separador {
 
                 kilos = text.substring(9, 14),
 
-                lote = text.substring(22, 26),
+                lote = lote,
+                numEmpaque = text.substring(22, 26),
 
                 identificador = text[26].toString(),
 
@@ -133,7 +144,8 @@ class Separador {
 
             kilos = text.substring(8, 13),
 
-            lote = text.substring(22, 26),
+            lote = lote,
+            numEmpaque = text.substring(22, 26),
 
             identificador = text[26].toString(),
 
@@ -165,7 +177,8 @@ class Separador {
 
             kilos = text.substring(8, 13),
 
-            lote = text.substring(21, 25),
+            numEmpaque = text.substring(21, 25),
+            lote = lote,
 
             identificador = text[25].toString(),
 
@@ -194,7 +207,9 @@ class Separador {
 
             kilos = text.substring(7, 12),
 
-            lote = text.substring(20, 24),
+            lote = lote,
+
+            numEmpaque = text.substring(20, 24),
 
             identificador = text[24].toString(),
 
@@ -225,7 +240,8 @@ class Separador {
 
             identificador = text[23].toString(),
 
-            lote = text.substring(20, 23),
+            lote = lote,
+            numEmpaque = text.substring(20, 23),
 
             //obtener valores de la hora
             segDigHora = text[10].toString(),
@@ -250,16 +266,18 @@ class Separador {
     private fun etiquetascorta(text: String): Etiqueta? {
         val claveProducto = text.substring(0, 3)
 
-        if(claveProducto == "624"){
+        if (claveProducto == "624") {
             return Etiqueta(
                 claveProducto = text.substring(0, 3),
-                piezas = text.substring(4,7),
+                piezas = text.substring(4, 7),
 
                 kilos = text.substring(7, 13),
 
                 identificador = text[22].toString(),
 
-                lote = text.substring(18, 22),
+                lote = lote,
+
+                numEmpaque = text.substring(18, 22),
 
                 //obtener valores de la hora
                 segDigHora = text[10].toString(),
@@ -286,7 +304,10 @@ class Separador {
 
             identificador = text[22].toString(),
 
-            lote = text.substring(18, 22),
+            lote = lote,
+
+            numEmpaque = text.substring(18, 22),
+
 
             //obtener valores de la hora
             segDigHora = text[10].toString(),
@@ -313,7 +334,8 @@ class Separador {
             kilos = text.substring(8, 13),
             identificador = text[21].toString(),
 
-            lote = text.substring(17, 20),
+            lote = lote,
+            numEmpaque = text.substring(17, 20),
 
             //obtener valores de la hora
 
@@ -345,7 +367,9 @@ class Separador {
 
             identificador = text[20].toString(),
 
-            lote = text.substring(16, 20),
+            lote = lote,
+
+            numEmpaque = text.substring(16, 20),
 
             //obtener valores de la hora
             segDigHora = text[13].toString(),
@@ -369,7 +393,9 @@ class Separador {
 
             identificador = text[19].toString(),
 
-            lote = text.substring(14, 18),
+            lote = lote,
+
+            numEmpaque = text.substring(14, 18),
 
             primDigMin = text[3].toString(),
 
@@ -391,7 +417,9 @@ class Separador {
 
             identificador = text[18].toString(),
 
-            lote = text.substring(14, 18),
+            lote = lote,
+
+            numEmpaque = text.substring(14, 18),
 
             primDigMin = text[3].toString(),
 

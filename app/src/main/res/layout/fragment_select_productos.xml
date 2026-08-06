@@ -7,7 +7,8 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    tools:context=".SelectProductos">
+    tools:context=".SelectProductos"
+    android:fitsSystemWindows="true">
 
     <TextView
         android:id="@+id/title"
@@ -23,14 +24,14 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="550dp"
-        android:layout_marginHorizontal="10dp">
+        android:layout_height="600dp">
 
         <TableLayout
             android:id="@+id/tableLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="10dp"
+            android:padding="10dp">
 
             <TableRow>
                 <TextView
@@ -53,7 +54,7 @@
         android:id="@+id/addProduct"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Añadir un Producto"
+        android:text="Añadir o editar un Producto"
         android:backgroundTint="@color/green"
         android:textColor="@color/white"
         android:textStyle="bold"

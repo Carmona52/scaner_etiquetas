@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import androidx.appcompat.app.AlertDialog
 
-class reportesActivity : Fragment() {
+class ReportesActivity : Fragment() {
 
     private var _binding: FragmentReportesBinding? = null
     private val binding get() = _binding!!
@@ -34,11 +34,21 @@ class reportesActivity : Fragment() {
     private var fechaFinISO: String? = null
 
     private val camaras = arrayOf(
-        "Camara de Fresco 1", "Camara 2", "Camara 3", "Camara 4", "Camara 5",
-        "Camara 6", "Camara de Fresco 7", "Camara 8", "Camara 9"
+        "Camara de Fresco 1",
+        "Camara de Fresco 2",
+        "Camara de Fresco 3",
+        "Camara de Fresco 4",
+        "Camara de Fresco 7",
+        "Camara de Congelacion 1",
+        "Camara de Congelacion 2",
+        "Camara de Congelacion 3",
+        "Camara de Conservacion 1",
+        "Camara de Conservacion 2",
+        "Camara de Conservacion 3",
+        "Camara de Conservacion 4"
     )
     private val turnos = arrayOf("Turno 1", "Turno 2", "Turno 3")
-    private val movimientos = arrayOf("Entrada", "Salida", "Ambos")
+    private val movimientos = arrayOf("Entrada", "Salida", "Inventario", "Ambos")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -125,7 +135,7 @@ class reportesActivity : Fragment() {
                     position: Int,
                     id: Long
                 ) {
-                    movimientoSeleccionado = if (position == 2) null else listaMovimientos[position]
+                    movimientoSeleccionado = if (position == 3) null else listaMovimientos[position]
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>) {}
@@ -243,6 +253,60 @@ class reportesActivity : Fragment() {
             if (uri != null) {
                 resolver.openOutputStream(uri)?.use { outputStream ->
                     outputStream.write(
+                        "Etiqueta,Clave Producto,Descripcion,Piezas,Kilos,N. Empaque, Lote,Fecha,Hora,Fecha Escaneo,Zona,Camara,Turno,Movimiento,Escaneado por,Notas\n".toByteArray()
+                    )
+                    datos.forEach { e ->
+                        outputStream.write(
+                            "=\"${e.etiquetaEscaneada}\",${e.claveProducto},${e.descripcionArticulo},${e.piezas},${e.kilos},${e.numEmpaque}, ${e.lote},${e.fecha},${e.hora},${e.fechaEscaneo},${e.zona},${e.camara},${e.turno},${e.tipoMovimiento},${e.escaneadoPor},${e.notas}\n".toByteArray()
+                        )
+                    }
+                }
+
+                Toast.makeText(
+                    requireContext(),
+                    "Reporte guardado en Etiquetas/Reportes/$carpetaFecha/$nombreArchivo",
+                    Toast.LENGTH_LONG
+                ).show()
+                true
+            } else {
+                Toast.makeText(requireContext(), "Error al crear el archivo", Toast.LENGTH_SHORT)
+                    .show()
+                false
+            }
+        } catch (e: Exception) {
+            Toast.makeText(
+                requireContext(),
+                "Error al generar reporte: ${e.message}",
+                Toast.LENGTH_SHORT
+            ).show()
+            false
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun exportarxlsx(datos: List<EtiquetaGuardada>, prefijoNombre: String): Boolean {
+        val formatoArchivo = DateTimeFormatter.ofPattern("dd-MM-yyyy HH-mm-ss")
+        val formatoCarpeta = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        val ahora = LocalDateTime.now()
+
+        val carpetaFecha = ahora.format(formatoCarpeta)
+        val nombreArchivo = "${prefijoNombre}_${ahora.format(formatoArchivo)}.xlsx"
+        return try {
+            val resolver = requireContext().contentResolver
+            val contentValues = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, nombreArchivo)
+                put(MediaStore.MediaColumns.MIME_TYPE, "text/csv")
+                put(
+                    MediaStore.MediaColumns.RELATIVE_PATH,
+                    "Download/Etiquetas/Reportes/$carpetaFecha/"
+                )
+            }
+
+            val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+
+            if (uri != null) {
+                resolver.openOutputStream(uri)?.use { outputStream ->
+                    outputStream.write(
                         "Etiqueta,Clave Producto,Descripcion,Piezas,Kilos,Lote,Fecha,Hora,Fecha Escaneo,Zona,Camara,Turno,Movimiento,Escaneado por,Notas\n".toByteArray()
                     )
                     datos.forEach { e ->
@@ -282,7 +346,7 @@ class reportesActivity : Fragment() {
 
     fun verAllEtiquetas() {
         parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, seeAllEtiquetasFragment())
+            .replace(R.id.fragment_container, SeeAllEtiquetasFragment())
             .addToBackStack(null)
             .commit()
     }
