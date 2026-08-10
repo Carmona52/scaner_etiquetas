@@ -308,15 +308,6 @@ class DataBase(private val context: Context) {
         }
     }
 
-    fun existeArticulo(claveProducto: String): Boolean {
-        var existe = false
-        connection.prepare("SELECT 1 FROM Articulos WHERE claveProducto = ?").use { stmt ->
-            stmt.bindText(1, claveProducto)
-            existe = stmt.step()
-        }
-        return existe
-    }
-
     @RequiresApi(Build.VERSION_CODES.O)
     fun insertarEtiqueta(
         e: Etiqueta,
@@ -342,7 +333,7 @@ class DataBase(private val context: Context) {
                 stmt.bindText(3, e.piezas ?: "")
                 stmt.bindText(4, e.kilos)
                 stmt.bindText(5, e.lote ?: "")
-                stmt.bindText(6, e.numEmpaque ?: "")
+                stmt.bindText(6, e.numEmpaque)
                 stmt.bindText(7, fecha)
                 stmt.bindText(8, hora)
                 stmt.bindText(9, (e.fechaEscaneo ?: LocalDateTime.now()).toString())
@@ -460,7 +451,6 @@ class DataBase(private val context: Context) {
         )
     }
 
-    /** Devuelve el idCamara donde esta etiqueta sigue "adentro" (última fila = Entrada), o null. */
     fun obtenerCamaraActualId(etiquetaEscaneada: String): Int? {
         var idCamaraActual: Int? = null
         connection.prepare(
@@ -499,10 +489,6 @@ class DataBase(private val context: Context) {
             )
             """.trimIndent()
         )
-    }
-
-    fun limpiarEtiquetas() {
-        connection.execSQL("DELETE FROM Etiquetas")
     }
 
     fun eliminarUltimaEtiqueta() {

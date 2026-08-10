@@ -69,7 +69,6 @@ class Separador {
     private fun etiquetaslargas(text: String): Etiqueta {
 
         val anioFull = "${anioFull}${text[15]}"
-        Log.i("Anio", "$anioFull")
         val digitDia = "${text[18]}${text[16]}"
         val digitMes = "${text[19]}${text[14]}"
 
@@ -115,13 +114,25 @@ class Separador {
 
         }
 
-        if (claveProducto == "1100") {
+        if (claveProducto == "1100")
+        {
+            val actualYear = LocalDateTime.now().year.toString()
+            val getFirstDigit = actualYear.substring(0,3)
+            val yearEtiqueta = "$getFirstDigit${text[16]}"
+            val digitDias = "${text[19]}${text[17]}"
+            val digitMess = "${text[20]}${text[15]}"
+
+            Log.i("Anio", "$digitDias $digitMess")
+
+            val getJulianDay = LocalDate.of(yearEtiqueta.toInt(), digitMess.toInt(), digitDias.toInt()).dayOfYear.toString()
+
+            val loteFinal = "${yearEtiqueta.takeLast(2)}$getJulianDay"
             return Etiqueta(
                 claveProducto = text.substring(0, 3),
 
                 piezas = text.substring(5, 8),
 
-                kilos = text.substring(9, 14),
+                kilos = text.substring(9, 13),
 
                 lote = loteFinal,
                 numEmpaque = text.substring(22, 26),
@@ -129,19 +140,19 @@ class Separador {
                 identificador = text[26].toString(),
 
                 //obtener valores de la hora
-                primDigHora = text[17].toString(),
-                segDigHora = text[13].toString(),
-                primDigMin = text[3].toString(),
-                segDigMin = text[20].toString(),
-                primDigSeg = text[21].toString(),
-                segDigSeg = text[12].toString(),
+                primDigHora = text[18].toString(),
+                segDigHora = text[14].toString(),
+                primDigMin = text[4].toString(),
+                segDigMin = text[21].toString(),
+                primDigSeg = text[22].toString(),
+                segDigSeg = text[14].toString(),
 
                 //valores para fecha
-                ultDigAnio = text[15].toString(),
-                primDigMes = text[19].toString(),
-                segDigMes = text[14].toString(),
-                primDigDia = text[18].toString(),
-                segDigDia = text[16].toString(),
+                ultDigAnio = text[16].toString(),
+                primDigMes = text[20].toString(),
+                segDigMes = text[15].toString(),
+                primDigDia = text[19].toString(),
+                segDigDia = text[17].toString(),
 
                 notas = "Escaneo Completo"
             )

@@ -267,7 +267,7 @@ class EscanearEtiquetaFragment : Fragment() {
                     }
                     return
                 } else {
-                    soundHelper?.makeGoodSound()
+                    soundHelper?.completeCicle()
                     requireActivity().runOnUiThread {
                         Toast.makeText(
                             requireContext(),
@@ -275,6 +275,22 @@ class EscanearEtiquetaFragment : Fragment() {
                             Toast.LENGTH_LONG
                         ).show()
                     }
+                }
+            }
+
+            "Inventario" -> {
+                if (idCamaraActual != null) {
+                    soundHelper?.makeBadSound()
+                    val nombreCamaraActual = db.obtenerNombreCamara(idCamaraActual) ?: "otra cámara"
+                    val mensaje = if (idCamaraActual == camara.id) {
+                        "Esta etiqueta ya está dentro de esta cámara — falta registrar su salida"
+                    } else {
+                        "Esta etiqueta está dentro de $nombreCamaraActual — debe salir antes de entrar a ${camara.nombreCamara}"
+                    }
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireContext(), mensaje, Toast.LENGTH_LONG).show()
+                    }
+                    return
                 }
             }
         }
