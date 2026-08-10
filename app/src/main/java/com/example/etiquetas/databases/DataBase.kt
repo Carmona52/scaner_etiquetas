@@ -102,6 +102,18 @@ class DataBase(private val context: Context) {
 
         connection.execSQL(
             """
+                CREATE TABLE IF NOT EXISTS Tarimas (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    idZona INTEGER NOT NULL,
+                    idCamara INTEGER NOT NULL,
+                    FOREIGN KEY (idZona) REFERENCES Zonas(id),
+                    FOREIGN KEY (idCamara) REFERENCES Camaras(id)
+                )
+            """.trimIndent()
+        )
+
+        connection.execSQL(
+            """
             CREATE TABLE IF NOT EXISTS Etiquetas (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 etiquetaEscaneada TEXT NOT NULL,
@@ -115,13 +127,15 @@ class DataBase(private val context: Context) {
                 fechaEscaneo TEXT NOT NULL,
                 idZona INTEGER NOT NULL,
                 idCamara INTEGER NOT NULL,
+                idTarimas INTEGER,
                 turno TEXT NOT NULL,
                 tipoMovimiento TEXT NOT NULL,
                 escaneadoPor TEXT NOT NULL,
                 notas TEXT NOT NULL DEFAULT '',
                 FOREIGN KEY (claveProducto) REFERENCES Articulos(claveProducto),
                 FOREIGN KEY (idZona) REFERENCES Zonas(id),
-                FOREIGN KEY (idCamara) REFERENCES Camaras(id)
+                FOREIGN KEY (idCamara) REFERENCES Camaras(id),
+                FOREIGN KEY (idTarimas) REFERENCES Tarimas(id)
             )
             """.trimIndent()
         )
