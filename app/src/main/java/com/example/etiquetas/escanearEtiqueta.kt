@@ -1,10 +1,5 @@
 package com.example.etiquetas
 
-import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,21 +11,20 @@ import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.etiquetas.databinding.EscanearEtiquetaFragmentBinding
 import java.io.File
-import java.time.LocalDateTime
 import com.example.etiquetas.database.DataBase
 import com.example.etiquetas.database.EtiquetaGuardada
 import android.media.AudioManager
 import android.media.ToneGenerator
 import com.example.etiquetas.database.CamaraGuardada
 import com.example.etiquetas.database.ZonaGuardada
-import com.example.etiquetas.utils.Etiqueta
 import com.example.etiquetas.utils.Separador
 import com.example.etiquetas.utils.userNameCache
 import com.example.etiquetas.utils.MakeSounds
+import com.example.etiquetas.utils.ScanerAccess
+import com.example.etiquetas.utils.DateBuilders
 
 class EscanearEtiquetaFragment : Fragment() {
     private var _binding: EscanearEtiquetaFragmentBinding? = null
@@ -39,41 +33,12 @@ class EscanearEtiquetaFragment : Fragment() {
     private var camaraSeleccionada: CamaraGuardada? = null
     private var turnoSeleccionado: String? = null
     private var movimientoSeleccionado: String? = null
-
     private var toneGenerator: ToneGenerator? = null
     private var soundHelper: MakeSounds? = null
     private lateinit var db: DataBase
-
+    private var scannerManager: ScanerAccess? = null
     private val turnos = arrayOf("Turno 1", "Turno 2", "Turno 3")
-
     private val movimientos = arrayOf("Entrada", "Salida", "Inventario")
-
-    private val scanReceiver = object : BroadcastReceiver() {
-        @RequiresApi(Build.VERSION_CODES.O)
-        override fun onReceive(context: Context, intent: Intent) {
-            val codigo = when (intent.action) {
-                ACTION_SUNMI -> intent.getStringExtra(EXTRA_SUNMI)
-                ACTION_ZEBRA -> intent.getStringExtra(EXTRA_ZEBRA)
-                ACTION_HONEYWELL -> intent.getStringExtra(EXTRA_HONEYWELL)
-                ACTION_HONEYWELL_AIDC -> {
-                    intent.getStringExtra(EXTRA_HONEYWELL_AIDC)
-                        ?: intent.getStringExtra("barcode_data")
-                }
-
-                else -> null
-            }
-
-            if (!codigo.isNullOrEmpty()) {
-                guardarEtiqueta(codigo)
-            } else {
-                Toast.makeText(
-                    context,
-                    "El escáner envió la señal, pero el código está vacío.",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -88,32 +53,21 @@ class EscanearEtiquetaFragment : Fragment() {
         db = DataBase(requireContext())
         toneGenerator = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100)
         soundHelper = MakeSounds(toneGenerator)
+        scannerManager = ScanerAccess(requireContext()) { codigoEscaneado ->
+            guardarEtiqueta(codigoEscaneado)
+        }
         configurarSelectores()
         configurarEventos()
-
-
     }
 
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onResume() {
         super.onResume()
-        val filter = IntentFilter().apply {
-            addAction(ACTION_SUNMI)
-            addAction(ACTION_ZEBRA)
-            addAction(ACTION_HONEYWELL)
-            addAction(ACTION_HONEYWELL_AIDC)
-
-            //Comentar si da problemas
-            addCategory(Intent.CATEGORY_DEFAULT)
-        }
-        ContextCompat.registerReceiver(
-            requireContext(), scanReceiver, filter, ContextCompat.RECEIVER_EXPORTED
-        )
+        scannerManager?.startScaning()
     }
 
     override fun onPause() {
         super.onPause()
-        requireContext().unregisterReceiver(scanReceiver)
+        scannerManager?.stopScaning()
     }
 
     override fun onDestroyView() {
@@ -121,16 +75,15 @@ class EscanearEtiquetaFragment : Fragment() {
         toneGenerator?.release()
         toneGenerator = null
         soundHelper = null
+        scannerManager = null
         _binding = null
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     private fun configurarEventos() {
         binding.btnCancelar.setOnClickListener { cancelarEscaneo() }
         binding.generarReporte.setOnClickListener { generarReportePantalla() }
 //        binding.seeAnomalias.setOnClickListener { verAnomalias() }
     }
-
 
     private fun configurarSelectores() {
         val zonas = db.obtenerZonas()
@@ -220,6 +173,12 @@ class EscanearEtiquetaFragment : Fragment() {
         val camara = camaraSeleccionada
         val turno = turnoSeleccionado
         val movimiento = movimientoSeleccionado
+        val dates = DateBuilders()
+        val idCamaraActual = db.obtenerCamaraActualId(etiqueta)
+        val util = Separador()
+        val etiquetaParseada = util.etiquetaseparation(etiqueta)
+        val tempFile = userNameCache.userNameRoute
+        val userName = if (tempFile != null) File(tempFile).readText() else "desconocido"
 
         if (zona == null || camara == null || turno == null || movimiento == null) {
             soundHelper?.makeBadSound()
@@ -232,8 +191,6 @@ class EscanearEtiquetaFragment : Fragment() {
             }
             return
         }
-
-        val idCamaraActual = db.obtenerCamaraActualId(etiqueta)
 
         when (movimiento) {
             "Entrada" -> {
@@ -295,9 +252,6 @@ class EscanearEtiquetaFragment : Fragment() {
             }
         }
 
-        val util = Separador()
-        val etiquetaParseada = util.etiquetaseparation(etiqueta)
-
         if (etiquetaParseada == null) {
             soundHelper?.makeBadSound()
             requireActivity().runOnUiThread {
@@ -310,11 +264,9 @@ class EscanearEtiquetaFragment : Fragment() {
             return
         }
 
-        val tempFile = userNameCache.userNameRoute
-        val userName = if (tempFile != null) File(tempFile).readText() else "desconocido"
+        val fecha = dates.makeDate(etiquetaParseada)
+        val hora = dates.makeHour(etiquetaParseada)
 
-        val fecha = construirFecha(etiquetaParseada)
-        val hora = construirHora(etiquetaParseada)
 
         val insertado = db.insertarEtiqueta(
             e = etiquetaParseada,
@@ -351,16 +303,6 @@ class EscanearEtiquetaFragment : Fragment() {
         Toast.makeText(requireContext(), "Última etiqueta eliminada", Toast.LENGTH_SHORT).show()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun construirFecha(e: Etiqueta): String {
-        val anio = LocalDateTime.now().year
-        val firstDigitsofYear = anio.toString().substring(0, 3)
-        return "${e.primDigDia}${e.segDigDia}/${e.primDigMes}${e.segDigMes}/${firstDigitsofYear}${e.ultDigAnio}"
-    }
-
-    private fun construirHora(e: Etiqueta): String {
-        return "${e.primDigHora}${e.segDigHora}:${e.primDigMin}${e.segDigMin}:${e.primDigSeg}${e.segDigSeg}"
-    }
 
     private fun actualizarTablaFiltrada() {
         val resultados = db.obtenerReporteFiltrado(
@@ -408,16 +350,4 @@ class EscanearEtiquetaFragment : Fragment() {
             .replace(R.id.fragment_container, ReportesActivity()).addToBackStack(null).commit()
     }
 
-    companion object {
-        private const val ACTION_SUNMI = "com.sunmi.scanner.ACTION_DATA_CODE_RECEIVED"
-        private const val EXTRA_SUNMI = "data"
-        private const val ACTION_ZEBRA = "com.example.etiquetas.SCAN"
-        private const val EXTRA_ZEBRA = "com.symbol.datawedge.data_string"
-
-        const val ACTION_HONEYWELL = "com.honeywell.scanintent.action.SCAN"
-        const val EXTRA_HONEYWELL = "com.honeywell.scanintent.extra.DATA"
-
-        const val ACTION_HONEYWELL_AIDC = "com.honeywell.aidc.action.BARCODE_DATA"
-        const val EXTRA_HONEYWELL_AIDC = "data"
-    }
 }
