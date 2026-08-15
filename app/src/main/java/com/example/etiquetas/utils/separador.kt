@@ -1,6 +1,5 @@
 package com.example.etiquetas.utils
 
-
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -41,7 +40,7 @@ data class Etiqueta(
 
 @RequiresApi(Build.VERSION_CODES.O)
 class Separador {
-    val anioFull: String = LocalDate.now().year.toString().substring(0,3)
+    val anioFull: String = LocalDate.now().year.toString().substring(0, 3)
     val anio: String get() = LocalDateTime.now().year.toString().takeLast(2)
     val dia: String get() = LocalDate.now().dayOfYear.toString().padStart(3, '0')
 
@@ -72,13 +71,11 @@ class Separador {
         val digitDia = "${text[18]}${text[16]}"
         val digitMes = "${text[19]}${text[14]}"
 
-        val getJulianDay =
-            LocalDate.of(anioFull.toInt(), digitMes.toInt(), digitDia.toInt()).dayOfYear.toString()
+        val getJulianDay = LocalDate.of(anioFull.toInt(), digitMes.toInt(), digitDia.toInt()).dayOfYear.toString()
 
         val loteFinal = "${anioFull.takeLast(2)}$getJulianDay"
 
         val claveProducto = text.substring(0, 4)
-        Log.d("separador", "Clave Producto: $claveProducto")
 
         if (claveProducto == "0033") {
             return Etiqueta(
@@ -110,21 +107,22 @@ class Separador {
 
                 notas = "Escaneo Completo"
             )
-
-
         }
 
-        if (claveProducto == "1100")
-        {
+        if (claveProducto == "1100") {
             val actualYear = LocalDateTime.now().year.toString()
-            val getFirstDigit = actualYear.substring(0,3)
+            val getFirstDigit = actualYear.substring(0, 3)
             val yearEtiqueta = "$getFirstDigit${text[16]}"
             val digitDias = "${text[19]}${text[17]}"
             val digitMess = "${text[20]}${text[15]}"
 
             Log.i("Anio", "$digitDias $digitMess")
 
-            val getJulianDay = LocalDate.of(yearEtiqueta.toInt(), digitMess.toInt(), digitDias.toInt()).dayOfYear.toString()
+            val getJulianDay = LocalDate.of(
+                yearEtiqueta.toInt(),
+                digitMess.toInt(),
+                digitDias.toInt()
+            ).dayOfYear.toString()
 
             val loteFinal = "${yearEtiqueta.takeLast(2)}$getJulianDay"
             return Etiqueta(
@@ -187,7 +185,6 @@ class Separador {
 
             notas = "Escaneo Completo"
         )
-
     }
 
     private fun etiquetasmedianas(text: String): Etiqueta {
@@ -294,7 +291,6 @@ class Separador {
 
 
             notas = "Esta Etiqueta no cuenta con: Fecha y lote completo"
-
         )
     }
 
@@ -328,7 +324,6 @@ class Separador {
 
 
                 notas = "Esta Etiqueta no cuenta con: Lote ni Piezas"
-
             )
         }
 
@@ -358,7 +353,6 @@ class Separador {
 
 
             notas = "Esta Etiqueta no cuenta con: Lote ni Piezas"
-
         )
     }
 
@@ -381,10 +375,7 @@ class Separador {
             segDigMes = text[14].toString(),
             segDigDia = text[16].toString(),
 
-
             //Esta etiqueta no cuenta con fecha y hora completas, hay etiquetas con impresión 2020, se toman como descarte, y no se toma el digito del año
-
-
             notas = "Esta Etiqueta no cuenta con: Fecha ni Hora completas"
 
         )
@@ -405,14 +396,10 @@ class Separador {
             numEmpaque = text.substring(16, 20),
 
             //obtener valores de la hora
-            segDigHora = text[13].toString(),
-            primDigMin = text[3].toString(),
+            segDigHora = text[13].toString(), primDigMin = text[3].toString(),
 
             //Esta etiqueta no cuenta con las horas completas, mientras que la fecha no viene impresa
-            //
-
             notas = "Esta Etiqueta no cuenta con: Fecha y Hora completas"
-
         )
     }
 
@@ -433,10 +420,7 @@ class Separador {
             primDigMin = text[3].toString(),
 
             //Esta etiqueta solo cuenta con el primer digito del minuto, la demás está vacía
-
-
             notas = "Esta Etiqueta no cuenta con: Hora ni Fecha Completas"
-
         )
     }
 
@@ -458,10 +442,7 @@ class Separador {
 
             //Esta etiqueta no cuenta con datos como la fecha y hora de su impresión,
             //A mi entendimiento ninguna cuenta con numero de empaque
-
-
             notas = "Esta Etiqueta no cuenta con: Fecha ni hora de impresion"
-
         )
     }
 }

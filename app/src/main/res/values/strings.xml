@@ -1,8 +1,7 @@
 <resources>
     <string name="app_name">Etiquetas</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="titulo">ESCANEAR ETIQUETAS V1.3.1</string>
+    <string name="titulo">ESCANEAR ETIQUETAS V1.3.5</string>
     <string name="saveCSV">Guardar CSV</string>
     <string name="cancelar">Cancelar</string>
     <string name="deleteLast">Eliminar Último Escaneado</string>
@@ -31,6 +30,7 @@
     <string name="ver_etiquetas_escaneadas">Ver Etiquetas Escaneadas</string>
     <string name="ver_cat_logo_de_productos">Ver Catálogo de Productos</string>
     <string name="catalogo_de_productos">Catalogo de Productos</string>
-    <string name="all_scan_etiquetas">Ver todas las etiquetas Escaneadas</string>
+    <string name="all_scan_etiquetas">Etiquetas Escaneadas</string>
+    <string name="camaras">Cámaras</string>
 
 </resources>

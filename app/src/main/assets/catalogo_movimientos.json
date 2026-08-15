@@ -1,0 +1,106 @@
+[
+  {
+    "tipoMovimiento": "ENTRADA DE PRODUCCIÓN",
+    "factor": 1
+  },
+  {
+    "tipoMovimiento": "ENTRADA A CONGELADO DE ENHIELADO",
+    "factor": 1
+  },
+  {
+    "tipoMovimiento": "ENTRADA POR TRASPASO",
+    "factor": 1
+  },
+  {
+    "tipoMovimiento": "ENTRADA DE DEVOLUCION DE CLIENTE",
+    "factor": 1
+  },
+  {
+    "tipoMovimiento": "ENTRADA DE DEVOLUCION DE CAMARA",
+    "factor": 1
+  },
+  {
+    "tipoMovimiento": "ENTRADA PRODUCTO A RESGUARDO",
+    "factor": 1
+  },
+  {
+    "tipoMovimiento": "ENTRADA DE EMPLAYADO",
+    "factor": 1
+  },
+  {
+    "tipoMovimiento": "SALIDA A EMPLAYADO",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA A DETALLAR",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA A CONGELAR",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA A FILETE",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA A PASTA",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA VENTA AUTOSERVICIO",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA VENTA MAYORISTA",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA A COMIDA",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA A DESHUESE",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA POR TRASPASO",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA A DESTAZADO",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA A COOKERS",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA ENHIELADO A CONGELADO",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA A SUPER MERCADO",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA A INYECTADO",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA A MARINADO",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA A BASCULA",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "SALIDA PRODUCTO A RESGUARDO",
+    "factor": -1
+  },
+  {
+    "tipoMovimiento": "INVENTARIO",
+    "factor": 0
+  }
+]

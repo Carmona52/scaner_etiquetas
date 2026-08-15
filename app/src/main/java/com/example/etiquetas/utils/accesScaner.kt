@@ -7,7 +7,6 @@ import android.content.IntentFilter
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 
-
 class ScanerAccess(private val context: Context, private val onScanResult: (String) -> Unit) {
 
     private val scanReceiver = object : BroadcastReceiver() {
@@ -47,15 +46,15 @@ class ScanerAccess(private val context: Context, private val onScanResult: (Stri
         }
 
         ContextCompat.registerReceiver(
-            context,
-            scanReceiver,
-            filter,
-            ContextCompat.RECEIVER_EXPORTED
+            context, scanReceiver, filter, ContextCompat.RECEIVER_EXPORTED
         )
     }
 
     fun stopScaning() {
-        context.unregisterReceiver(scanReceiver)
+        try {
+            context.unregisterReceiver(scanReceiver)
+        } catch (e: IllegalArgumentException) {
+        }
     }
 
     companion object {

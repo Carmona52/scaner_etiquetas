@@ -5,7 +5,7 @@ import android.media.ToneGenerator
 class MakeSounds(private val toneGenerator: ToneGenerator?) {
 
     fun makeGoodSound() {
-        toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP, 550)
+        toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP, 300)
     }
 
     fun makeBadSound() {
@@ -14,5 +14,9 @@ class MakeSounds(private val toneGenerator: ToneGenerator?) {
 
     fun completeCicle() {
         toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP2, 550)
+    }
+
+    fun makeDeleteSound() {
+        toneGenerator?.startTone(ToneGenerator.TONE_CDMA_ABBR_ALERT, 180)
     }
 }

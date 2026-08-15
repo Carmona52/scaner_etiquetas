@@ -2,25 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginHorizontal="10dp"
+    android:layout_marginHorizontal="5dp"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
-
-
-    <TextView
-        android:id="@+id/titulo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5sp"
-        android:text="@string/titulo"
-        android:textAlignment="center"
-        android:textSize="24sp"
-        android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="2dp"
         android:layout_marginTop="10dp"
         android:orientation="horizontal">
 
@@ -28,20 +16,19 @@
             android:id="@+id/spinnerZona"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="2" />
 
         <Spinner
             android:id="@+id/spinnerCamara"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="3" />
 
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="2dp"
         android:layout_marginTop="10dp"
         android:orientation="horizontal">
 
@@ -62,7 +49,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginBottom="10dp"
         android:layout_weight="1"
         android:fillViewport="true">
 
@@ -134,63 +121,35 @@
                         android:padding="8dp"
                         android:text="@string/hora"
                         android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="8dp" />
                 </TableRow>
             </TableLayout>
         </HorizontalScrollView>
     </ScrollView>
 
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
+
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btnCancelar"
+            android:id="@+id/ingresoManual"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:backgroundTint="@color/red"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:text="@string/deleteLast"
-            android:textColor="@color/white"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/generarReporte"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
             android:backgroundTint="@color/green"
             android:focusable="false"
             android:focusableInTouchMode="false"
-            android:text="@string/generateReport"
+            android:text="Ingresar Etiqueta Manualmente"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
-
     </LinearLayout>
-
-    <!--        <LinearLayout-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:layout_marginBottom="10dp"-->
-    <!--            android:orientation="horizontal">-->
-
-    <!--            <Button-->
-    <!--                android:id="@+id/seeAnomalias"-->
-    <!--                android:layout_width="0dp"-->
-    <!--                android:layout_height="match_parent"-->
-    <!--                android:layout_weight="2"-->
-    <!--                android:backgroundTint="@color/yellow"-->
-    <!--                android:focusable="false"-->
-    <!--                android:focusableInTouchMode="false"-->
-    <!--                android:text="Ver anomalías"-->
-    <!--                android:textColor="@color/black"-->
-    <!--                android:textSize="16sp"-->
-    <!--                android:textStyle="bold" />-->
-    <!--        </LinearLayout>-->
-
-
 </LinearLayout>

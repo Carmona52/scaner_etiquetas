@@ -5,27 +5,50 @@
     android:id="@+id/productosMain"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginHorizontal="10dp"
+    android:fitsSystemWindows="true"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    tools:context=".SelectProductos"
-    android:fitsSystemWindows="true"
-    android:layout_marginHorizontal="10dp">
+    tools:context=".SelectProductos">
 
-    <TextView
-        android:id="@+id/title"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
-        android:layout_marginTop="15dp"
-        android:text="@string/catalogo_de_productos"
-        android:textAlignment="center"
-        android:textColor="@color/black"
-        android:textSize="30sp"
-        android:textStyle="bold" />
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/addProduct"
+            android:layout_marginHorizontal="10dp"
+            android:text="@string/catalogo_de_productos"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/addProduct"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="fitCenter"
+            android:src="@drawable/baseline_add_circle_outline_24"
+            app:tint="@android:color/holo_blue_dark" />
+
+    </RelativeLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="500dp">
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <TableLayout
             android:id="@+id/tableLayout"
@@ -35,31 +58,23 @@
             android:padding="10dp">
 
             <TableRow>
+
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:textStyle="bold"
                     android:text="Clave Producto" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="2"
+                    android:textStyle="bold"
                     android:text="Descripcion" />
             </TableRow>
 
         </TableLayout>
     </ScrollView>
-
-    <Button
-        android:id="@+id/addProduct"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Añadir o editar un Producto"
-        android:backgroundTint="@color/green"
-        android:textColor="@color/white"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_marginTop="15dp"/>
 
 </LinearLayout>

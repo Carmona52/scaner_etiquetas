@@ -8,19 +8,18 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TableRow
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.etiquetas.database.DataBase
-import com.example.etiquetas.database.productosGuardados
+import com.example.etiquetas.database.methods.productosGuardados
 import com.example.etiquetas.databinding.FragmentSelectProductosBinding
+import com.example.etiquetas.factory.dialog.tablerow.TableCellFactory
 
 class SelectProductos : Fragment() {
 
     private var _binding: FragmentSelectProductosBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var db: DataBase
 
     override fun onCreateView(
@@ -32,7 +31,8 @@ class SelectProductos : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        db = DataBase(requireContext())
+        db = DataBase.getInstance(requireContext())
+
         actualizarTabla()
         inicializarEventos()
     }
@@ -42,7 +42,7 @@ class SelectProductos : Fragment() {
     }
 
     private fun actualizarTabla() {
-        val productos = db.obtenerProductos()
+        val productos = db.productos.getAllProductos()
         val cantidadFilas = binding.tableLayout.childCount
         for (i in cantidadFilas - 1 downTo 1) {
             binding.tableLayout.removeViewAt(i)
@@ -52,15 +52,16 @@ class SelectProductos : Fragment() {
     }
 
     private fun agregarFila(producto: productosGuardados) {
+        val context = requireContext()
         val fila = TableRow(requireContext())
         val valores = listOf(producto.claveProducto, producto.descripcion)
+        val longitudFila = listOf(1f, 2f)
 
-        valores.forEach { texto ->
-            val textView = TextView(requireContext()).apply {
-                layoutParams = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
-                setPadding(6, 6, 6, 6)
-                text = texto
-            }
+        valores.forEachIndexed { index, texto ->
+            val weight = longitudFila.getOrElse(index) { 0f }
+            val textView = TableCellFactory.createCelda(
+                context = context, texto = texto.toString(), weight = weight
+            )
             fila.addView(textView)
         }
         binding.tableLayout.addView(fila)
@@ -79,13 +80,10 @@ class SelectProductos : Fragment() {
 
         layout.addView(input)
 
-        val dialog = AlertDialog.Builder(context)
-            .setTitle("Por favor ingrese la contraseña")
-            .setView(layout)
-            .setPositiveButton("Aceptar", null)
-            .setNegativeButton("Cancelar", null)
-            .setCancelable(true)
-            .create()
+        val dialog =
+            AlertDialog.Builder(context).setTitle("Por favor ingrese la contraseña").setView(layout)
+                .setPositiveButton("Aceptar", null).setNegativeButton("Cancelar", null)
+                .setCancelable(true).create()
 
         dialog.setOnShowListener {
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
@@ -112,6 +110,7 @@ class SelectProductos : Fragment() {
 
         val codeInput = EditText(requireContext()).apply {
             hint = "Ingrese el código del producto"
+            inputType = android.text.InputType.TYPE_CLASS_PHONE
         }
         val descriptionInput = EditText(requireContext()).apply {
             hint = "Ingrese la descripción del producto"
@@ -120,13 +119,10 @@ class SelectProductos : Fragment() {
         layout.addView(codeInput)
         layout.addView(descriptionInput)
 
-        val dialog = AlertDialog.Builder(requireContext())
-            .setTitle("Insertar o actualizar elemento")
-            .setView(layout)
-            .setPositiveButton("Guardar", null)
-            .setNegativeButton("Cancelar", null)
-            .setCancelable(true)
-            .create()
+        val dialog =
+            AlertDialog.Builder(requireContext()).setTitle("Insertar o actualizar elemento")
+                .setView(layout).setPositiveButton("Guardar", null)
+                .setNegativeButton("Cancelar", null).setCancelable(true).create()
 
         dialog.setOnShowListener {
             val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
@@ -136,15 +132,13 @@ class SelectProductos : Fragment() {
                 val descripcion = descriptionInput.text.toString().trim()
 
                 if (codigo.isNotEmpty() && descripcion.isNotEmpty()) {
-                    db.upsertArticulo(codigo, descripcion)
+                    db.productos.upsertProducto(codigo, descripcion)
                     Toast.makeText(requireContext(), "Producto guardado", Toast.LENGTH_SHORT).show()
                     actualizarTabla()
                     dialog.dismiss()
                 } else {
                     Toast.makeText(
-                        requireContext(),
-                        "Por favor completa ambos campos",
-                        Toast.LENGTH_SHORT
+                        requireContext(), "Por favor completa ambos campos", Toast.LENGTH_SHORT
                     ).show()
                 }
             }

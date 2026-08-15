@@ -1,14 +1,13 @@
 package com.example.etiquetas
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import com.example.etiquetas.databinding.FragmentLoginActivityBinding
-import com.example.etiquetas.utils.userNameCache
-import java.io.File
+import com.example.etiquetas.utils.UserSession
 
 class LoginActivity : Fragment() {
 
@@ -16,8 +15,7 @@ class LoginActivity : Fragment() {
     private val binding get() = _binding!!
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentLoginActivityBinding.inflate(inflater, container, false)
         return binding.root
@@ -32,25 +30,18 @@ class LoginActivity : Fragment() {
     }
 
     private fun login() {
-        val fragmentScan = EscanearEtiquetaFragment()
+        val userName = binding.userName.text.toString().trim()
 
-        val userName = binding.userName.text
-        val tempFile = File.createTempFile("userName", ".tmp", requireContext().cacheDir)
-        tempFile.writeText(userName.toString())
-        userNameCache.userNameRoute = tempFile.absolutePath
+        if (userName.isNotEmpty()) {
+            UserSession.guardar(requireContext(), userName)
+            (activity as? MainActivity)?.setBottomNavVisible(true)
 
-
-        if (userName.toString().length != 0) {
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragmentScan)
-                .addToBackStack(null)
-                .commit()
+                .replace(R.id.fragment_container, EscanearEtiquetaFragment()).commit()
         } else {
             Toast.makeText(requireContext(), "Debe de Ingresar su nombre", Toast.LENGTH_SHORT)
                 .show()
         }
-
-
     }
 
     override fun onDestroyView() {

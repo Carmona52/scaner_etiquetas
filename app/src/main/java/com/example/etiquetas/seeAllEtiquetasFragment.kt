@@ -2,7 +2,6 @@ package com.example.etiquetas
 
 import android.os.Build
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,26 +10,27 @@ import android.widget.ArrayAdapter
 import android.widget.TableRow
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import com.example.etiquetas.database.CamaraGuardada
+import androidx.fragment.app.Fragment
 import com.example.etiquetas.database.DataBase
-import com.example.etiquetas.database.EtiquetaGuardada
-import com.example.etiquetas.database.ZonaGuardada
+import com.example.etiquetas.database.methods.CamaraGuardada
+import com.example.etiquetas.database.methods.EtiquetaGuardada
+import com.example.etiquetas.database.methods.ZonaGuardada
 import com.example.etiquetas.databinding.FragmentSeeAllEtiquetasBinding
-import java.time.format.DateTimeFormatter
+import com.example.etiquetas.utils.DateBuilders
 
 class SeeAllEtiquetasFragment : Fragment() {
-
     private var _binding: FragmentSeeAllEtiquetasBinding? = null
     private val binding get() = _binding!!
 
     private var zonaSeleccionada: ZonaGuardada? = null
     private var camaraSeleccionada: CamaraGuardada? = null
 
+
     private lateinit var db: DataBase
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentSeeAllEtiquetasBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -38,27 +38,23 @@ class SeeAllEtiquetasFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        db = DataBase(requireContext())
+        db = DataBase.getInstance(requireContext())
         configurarSelectores()
         actualizarTablaFiltrada()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun configurarSelectores() {
-        val zonas = db.obtenerZonas()
+        val zonas = db.zonas.getAllZonas()
 
         val adapterZona = ArrayAdapter(
-            requireContext(), android.R.layout.simple_spinner_item, zonas.map { it.nombreZona }
-        )
+            requireContext(), android.R.layout.simple_spinner_item, zonas.map { it.nombreZona })
         adapterZona.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerZona.adapter = adapterZona
 
         binding.spinnerZona.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
+                parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
                 zonaSeleccionada = zonas[position]
                 actualizarCamaras(zonaSeleccionada!!.id)
@@ -70,13 +66,10 @@ class SeeAllEtiquetasFragment : Fragment() {
 
         binding.spinnerCamara.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
+                parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
                 val camaras =
-                    zonaSeleccionada?.let { db.obtenerCamarasPorZona(it.id) } ?: emptyList()
+                    zonaSeleccionada?.let { db.camaras.getCamarasPorZona(it.id) } ?: emptyList()
                 if (position < camaras.size) {
                     camaraSeleccionada = camaras[position]
                     actualizarTablaFiltrada()
@@ -93,10 +86,9 @@ class SeeAllEtiquetasFragment : Fragment() {
     }
 
     private fun actualizarCamaras(idZona: Int) {
-        val camaras = db.obtenerCamarasPorZona(idZona)
+        val camaras = db.camaras.getCamarasPorZona(idZona)
         val adapterCamara = ArrayAdapter(
-            requireContext(), android.R.layout.simple_spinner_item, camaras.map { it.nombreCamara }
-        )
+            requireContext(), android.R.layout.simple_spinner_item, camaras.map { it.nombreCamara })
         adapterCamara.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerCamara.adapter = adapterCamara
         camaraSeleccionada = camaras.firstOrNull()
@@ -104,9 +96,8 @@ class SeeAllEtiquetasFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun actualizarTablaFiltrada() {
-        val resultados = db.obtenerReporteFiltrado(
-            idZona = zonaSeleccionada?.id,
-            idCamara = camaraSeleccionada?.id
+        val resultados = db.reportes.obtenerReporteFiltrado(
+            idZona = zonaSeleccionada?.id, idCamara = camaraSeleccionada?.id
         )
 
         val cantidadFilas = binding.tableLayout.childCount
@@ -116,6 +107,7 @@ class SeeAllEtiquetasFragment : Fragment() {
 
         resultados.forEach { agregarFilaDesdeDB(it) }
     }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun agregarFilaDesdeDB(e: EtiquetaGuardada) {
@@ -135,7 +127,7 @@ class SeeAllEtiquetasFragment : Fragment() {
             e.turno,
             e.tipoMovimiento,
             e.escaneadoPor,
-            formatDate(e.fechaEscaneo),
+            DateBuilders().formDate(e.fechaEscaneo),
             e.notas
         )
 
@@ -151,19 +143,6 @@ class SeeAllEtiquetasFragment : Fragment() {
         }
 
         binding.tableLayout.addView(fila)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun formatDate(dateString: String?): String {
-        if (dateString.isNullOrEmpty()) return ""
-
-        return try {
-            val parsedDate = java.time.LocalDateTime.parse(dateString)
-            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
-            parsedDate.format(formatter)
-        } catch (e: Exception) {
-            dateString
-        }
     }
 
     override fun onDestroyView() {

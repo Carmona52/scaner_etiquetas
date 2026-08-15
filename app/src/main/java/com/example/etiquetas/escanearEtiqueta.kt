@@ -1,30 +1,36 @@
 package com.example.etiquetas
 
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TableRow
-import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import com.example.etiquetas.databinding.EscanearEtiquetaFragmentBinding
-import java.io.File
 import com.example.etiquetas.database.DataBase
-import com.example.etiquetas.database.EtiquetaGuardada
-import android.media.AudioManager
-import android.media.ToneGenerator
-import com.example.etiquetas.database.CamaraGuardada
-import com.example.etiquetas.database.ZonaGuardada
-import com.example.etiquetas.utils.Separador
-import com.example.etiquetas.utils.userNameCache
+import com.example.etiquetas.database.methods.CamaraGuardada
+import com.example.etiquetas.database.methods.EtiquetaGuardada
+import com.example.etiquetas.database.methods.ZonaGuardada
+import com.example.etiquetas.database.methods.updateEtiqueta
+import com.example.etiquetas.databinding.EscanearEtiquetaFragmentBinding
+import com.example.etiquetas.factory.dialog.dialoFactory
+import com.example.etiquetas.factory.dialog.tablerow.TableCellFactory
+import com.example.etiquetas.utils.DateBuilders
 import com.example.etiquetas.utils.MakeSounds
 import com.example.etiquetas.utils.ScanerAccess
-import com.example.etiquetas.utils.DateBuilders
+import com.example.etiquetas.utils.Separador
+import com.example.etiquetas.utils.UserSession
 
 class EscanearEtiquetaFragment : Fragment() {
     private var _binding: EscanearEtiquetaFragmentBinding? = null
@@ -50,11 +56,13 @@ class EscanearEtiquetaFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        db = DataBase(requireContext())
+        db = DataBase.getInstance(requireContext())
         toneGenerator = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100)
         soundHelper = MakeSounds(toneGenerator)
         scannerManager = ScanerAccess(requireContext()) { codigoEscaneado ->
-            guardarEtiqueta(codigoEscaneado)
+            if (_binding != null && isAdded) {
+                guardarEtiqueta(codigoEscaneado)
+            }
         }
         configurarSelectores()
         configurarEventos()
@@ -79,14 +87,13 @@ class EscanearEtiquetaFragment : Fragment() {
         _binding = null
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun configurarEventos() {
-        binding.btnCancelar.setOnClickListener { cancelarEscaneo() }
-        binding.generarReporte.setOnClickListener { generarReportePantalla() }
-//        binding.seeAnomalias.setOnClickListener { verAnomalias() }
+        binding.ingresoManual.setOnClickListener { addManual() }
     }
 
     private fun configurarSelectores() {
-        val zonas = db.obtenerZonas()
+        val zonas = db.zonas.getAllZonas()
         val listaTurnos = turnos.toList()
         val listaMovimientos = movimientos.toList()
 
@@ -112,7 +119,7 @@ class EscanearEtiquetaFragment : Fragment() {
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
                 val camaras =
-                    zonaSeleccionada?.let { db.obtenerCamarasPorZona(it.id) } ?: emptyList()
+                    zonaSeleccionada?.let { db.camaras.getCamarasPorZona(it.id) } ?: emptyList()
                 if (position < camaras.size) {
                     camaraSeleccionada = camaras[position]
                     actualizarTablaFiltrada()
@@ -159,7 +166,7 @@ class EscanearEtiquetaFragment : Fragment() {
     }
 
     private fun actualizarCamaras(idZona: Int) {
-        val camaras = db.obtenerCamarasPorZona(idZona)
+        val camaras = db.camaras.getCamarasPorZona(idZona)
         val adapterCamara = ArrayAdapter(
             requireContext(), android.R.layout.simple_spinner_item, camaras.map { it.nombreCamara })
         adapterCamara.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -168,17 +175,17 @@ class EscanearEtiquetaFragment : Fragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun guardarEtiqueta(etiqueta: String) {
+    private fun guardarEtiqueta(etiqueta: String, nota: String? = null) {
+        if (_binding == null || !isAdded) return
         val zona = zonaSeleccionada
         val camara = camaraSeleccionada
         val turno = turnoSeleccionado
         val movimiento = movimientoSeleccionado
         val dates = DateBuilders()
-        val idCamaraActual = db.obtenerCamaraActualId(etiqueta)
+        val idCamaraActual = db.camaras.obtenerCamaraActualId(etiqueta)
         val util = Separador()
         val etiquetaParseada = util.etiquetaseparation(etiqueta)
-        val tempFile = userNameCache.userNameRoute
-        val userName = if (tempFile != null) File(tempFile).readText() else "desconocido"
+        val userName = UserSession.obtener(requireContext())
 
         if (zona == null || camara == null || turno == null || movimiento == null) {
             soundHelper?.makeBadSound()
@@ -196,7 +203,8 @@ class EscanearEtiquetaFragment : Fragment() {
             "Entrada" -> {
                 if (idCamaraActual != null) {
                     soundHelper?.makeBadSound()
-                    val nombreCamaraActual = db.obtenerNombreCamara(idCamaraActual) ?: "otra cámara"
+                    val nombreCamaraActual =
+                        db.camaras.getCamaraName(idCamaraActual) ?: "otra cámara"
                     val mensaje = if (idCamaraActual == camara.id) {
                         "Esta etiqueta ya está dentro de esta cámara — falta registrar su salida"
                     } else {
@@ -216,7 +224,7 @@ class EscanearEtiquetaFragment : Fragment() {
                         "Esta etiqueta no tiene una entrada registrada"
                     } else {
                         val nombreCamaraActual =
-                            db.obtenerNombreCamara(idCamaraActual) ?: "otra cámara"
+                            db.camaras.getCamaraName(idCamaraActual) ?: "otra cámara"
                         "Esta etiqueta está dentro de $nombreCamaraActual, no de ${camara.nombreCamara}"
                     }
                     requireActivity().runOnUiThread {
@@ -238,11 +246,12 @@ class EscanearEtiquetaFragment : Fragment() {
             "Inventario" -> {
                 if (idCamaraActual != null) {
                     soundHelper?.makeBadSound()
-                    val nombreCamaraActual = db.obtenerNombreCamara(idCamaraActual) ?: "otra cámara"
+                    val nombreCamaraActual =
+                        db.camaras.getCamaraName(idCamaraActual) ?: "otra cámara"
                     val mensaje = if (idCamaraActual == camara.id) {
-                        "Esta etiqueta ya está dentro de esta cámara — falta registrar su salida"
+                        "Esta etiqueta ya está dentro de esta cámara"
                     } else {
-                        "Esta etiqueta está dentro de $nombreCamaraActual — debe salir antes de entrar a ${camara.nombreCamara}"
+                        "Esta etiqueta está dentro de $nombreCamaraActual"
                     }
                     requireActivity().runOnUiThread {
                         Toast.makeText(requireContext(), mensaje, Toast.LENGTH_LONG).show()
@@ -268,7 +277,7 @@ class EscanearEtiquetaFragment : Fragment() {
         val hora = dates.makeHour(etiquetaParseada)
 
 
-        val insertado = db.insertarEtiqueta(
+        val insertado = db.etiquetas.insertarEtiqueta(
             e = etiquetaParseada,
             fecha = fecha,
             hora = hora,
@@ -277,7 +286,8 @@ class EscanearEtiquetaFragment : Fragment() {
             turno = turno,
             escaneadoPor = userName,
             etiquetaEscaneada = etiqueta,
-            tipoMovimiento = movimiento
+            tipoMovimiento = movimiento,
+            notas = nota
         )
 
         if (!insertado) {
@@ -293,28 +303,20 @@ class EscanearEtiquetaFragment : Fragment() {
         soundHelper?.makeGoodSound()
 
         requireActivity().runOnUiThread {
-            actualizarTablaFiltrada()
+            if (_binding != null) actualizarTablaFiltrada()
         }
     }
 
-    private fun cancelarEscaneo() {
-        db.eliminarUltimaEtiqueta()
-        actualizarTablaFiltrada()
-        Toast.makeText(requireContext(), "Última etiqueta eliminada", Toast.LENGTH_SHORT).show()
-    }
-
-
     private fun actualizarTablaFiltrada() {
-        val resultados = db.obtenerReporteFiltrado(
+        val resultados = db.reportes.obtenerReporteFiltrado(
             idZona = zonaSeleccionada?.id,
             idCamara = camaraSeleccionada?.id,
             turno = turnoSeleccionado,
             movimiento = movimientoSeleccionado
         )
 
-        val cantidadFilas = binding.tableLayout.childCount
-        for (i in cantidadFilas - 1 downTo 1) {
-            binding.tableLayout.removeViewAt(i)
+        if (binding.tableLayout.childCount > 1) {
+            binding.tableLayout.removeViews(1, binding.tableLayout.childCount - 1)
         }
 
         resultados.forEach { agregarFilaDesdeDB(it) }
@@ -322,32 +324,202 @@ class EscanearEtiquetaFragment : Fragment() {
 
     private fun agregarFilaDesdeDB(e: EtiquetaGuardada) {
         val fila = TableRow(requireContext())
+        val context = requireContext()
         val valores = listOf(
             e.claveProducto, e.descripcionArticulo, e.piezas, e.kilos, e.lote, e.fecha, e.hora
         )
 
         valores.forEach { texto ->
-            val textView = TextView(requireContext()).apply {
-                layoutParams = TableRow.LayoutParams(
-                    TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT
-                )
-                setPadding(20, 20, 20, 20)
-                text = texto
-            }
+            val textView = TableCellFactory.createCelda(context, texto.toString())
             fila.addView(textView)
         }
 
+        val btnAccion = ImageButton(context).apply {
+            setImageResource(android.R.drawable.ic_menu_edit)
+            setOnClickListener { verifyIdentity(e.id.toString()) }
+        }
+
+        fila.addView(btnAccion)
         binding.tableLayout.addView(fila)
     }
 
-    private fun generarReportePantalla() {
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, ReportesActivity()).addToBackStack(null).commit()
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun addManual() {
+        val layout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(32, 32, 32, 32)
+        }
+
+        val etiquetaInput = EditText(requireContext()).apply {
+            hint = "Ingrese la etiqueta"
+            inputType = InputType.TYPE_CLASS_PHONE
+        }
+
+        layout.addView(etiquetaInput)
+
+        val dialog =
+            AlertDialog.Builder(requireContext()).setTitle("Insertar etiqueta").setView(layout)
+                .setPositiveButton("Guardar", null).setNegativeButton("Cancelar", null)
+                .setCancelable(true).create()
+
+        dialog.setOnShowListener {
+            val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+
+            saveButton.setOnClickListener {
+                val etiqueta = etiquetaInput.text.toString().trim()
+                if (etiqueta.isNotEmpty()) {
+                    if (etiqueta.length > 15) {
+                        guardarEtiqueta(etiqueta, "Ingreso manual")
+                        Toast.makeText(requireContext(), "Etiqueta Ingresada", Toast.LENGTH_SHORT)
+                            .show()
+                        dialog.dismiss()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "Por favor ingrese una etiqueta válida",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } else {
+                    Toast.makeText(
+                        requireContext(), "Por favor ingrese una etiqueta", Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+        dialog.show()
     }
 
-    private fun verAnomalias() {
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, ReportesActivity()).addToBackStack(null).commit()
+    private fun verifyIdentity(id: String) {
+        val context = requireContext()
+        val layout = dialoFactory.createContenedor(context)
+
+        val passwordInput = dialoFactory.addInputField(
+            container = layout,
+            titulo = "",
+            hint = "Ingrese la contraseña",
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        )
+
+        val dialog = dialoFactory.createDialog(
+            context = context,
+            title = "Para poder editar la etiqueta, ingrese la contraseña",
+            contentView = layout
+        )
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val password = passwordInput.text.toString().trim()
+                if (password == "securePass") {
+                    dialog.dismiss()
+                    showID(id)
+                } else {
+                    Toast.makeText(context, "Contraseña incorrecta", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        dialog.show()
     }
 
+    private fun showID(etiquetaId: String) {
+        val context = requireContext()
+        val etiquetaUpdate: updateEtiqueta? = db.etiquetas.getOneEtiqueta(etiquetaId)
+
+        val layout = dialoFactory.createContenedor(context)
+
+        val etiquetaInput = dialoFactory.addInputField(
+            container = layout,
+            titulo = "Etiqueta",
+            valorInicial = etiquetaUpdate?.etiquetaEscaneada,
+            habilitado = false
+        )
+        val claveProducto = dialoFactory.addInputField(
+            container = layout,
+            titulo = "Clave Producto",
+            valorInicial = etiquetaUpdate?.claveProducto,
+            habilitado = true
+        )
+        val loteProducto = dialoFactory.addInputField(
+            container = layout,
+            titulo = "Lote Producto",
+            valorInicial = etiquetaUpdate?.lote,
+            habilitado = true
+        )
+        val piezas = dialoFactory.addInputField(
+            container = layout,
+            titulo = "Piezas",
+            valorInicial = etiquetaUpdate?.piezas,
+            habilitado = true
+        )
+        val kilos = dialoFactory.addInputField(
+            container = layout,
+            titulo = "Kilos",
+            valorInicial = etiquetaUpdate?.kilos,
+            habilitado = true
+        )
+
+        dialoFactory.addTitle(layout, "Tipo de Movimiento")
+        val tipoMovimientoSpinner = android.widget.Spinner(context)
+        val adapterMovimiento = ArrayAdapter(
+            context, android.R.layout.simple_spinner_item, movimientos.toList()
+        )
+        adapterMovimiento.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        tipoMovimientoSpinner.adapter = adapterMovimiento
+        val posicionActual = movimientos.indexOf(etiquetaUpdate?.tipoMovimiento)
+        if (posicionActual >= 0) tipoMovimientoSpinner.setSelection(posicionActual)
+        layout.addView(tipoMovimientoSpinner)
+
+        val dialog = dialoFactory.createDialog(
+            context = context,
+            title = "Editar Etiqueta",
+            contentView = layout,
+            positiveText = "Actualizar",
+            negativeText = "Eliminar"
+        )
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                try {
+                    db.etiquetas.upsertEtiqueta(
+                        etiquetaId, updateEtiqueta(
+                            etiquetaEscaneada = etiquetaInput.text.toString(),
+                            claveProducto = claveProducto.text.toString(),
+                            piezas = piezas.text.toString(),
+                            kilos = kilos.text.toString(),
+                            lote = loteProducto.text.toString(),
+                            tipoMovimiento = tipoMovimientoSpinner.selectedItem.toString()
+
+                        )
+                    )
+
+                    dialog.dismiss()
+                    soundHelper?.makeGoodSound()
+                    Toast.makeText(context, "Éxito al actulizar", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    soundHelper?.makeBadSound()
+                    Toast.makeText(context, "Falló al actulizar", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+                AlertDialog.Builder(requireContext()).setTitle("¿Eliminar la etiqueta?").setMessage(
+                        "Esto eliminará la etiqueta seleccionada"
+                    ).setPositiveButton("Sí, eliminar") { _, _ ->
+                        try {
+                            db.etiquetas.eliminarEtiqueta(etiquetaId.toInt())
+                            dialog.dismiss()
+                            soundHelper?.makeGoodSound()
+                            actualizarTablaFiltrada()
+                            Toast.makeText(context, "Éxito al borrar", Toast.LENGTH_SHORT).show()
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Falló al borrar", Toast.LENGTH_SHORT).show()
+                        }
+                    }.setNegativeButton("Cancelar", null).setCancelable(true).show()
+
+            }
+        }
+
+        dialog.show()
+    }
 }

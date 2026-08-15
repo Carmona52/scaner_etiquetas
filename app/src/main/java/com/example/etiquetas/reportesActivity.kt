@@ -12,14 +12,14 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.etiquetas.database.DataBase
-import com.example.etiquetas.database.EtiquetaGuardada
+import com.example.etiquetas.database.methods.EtiquetaGuardada
 import com.example.etiquetas.databinding.FragmentReportesBinding
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
-import androidx.appcompat.app.AlertDialog
 
 class ReportesActivity : Fragment() {
 
@@ -46,7 +46,7 @@ class ReportesActivity : Fragment() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        db = DataBase(requireContext())
+        db = DataBase.getInstance(requireContext())
         configurarSelectores()
         configurarEventos()
     }
@@ -55,8 +55,6 @@ class ReportesActivity : Fragment() {
     private fun configurarEventos() {
         binding.generarReporteGeneral.setOnClickListener { generarReporteGeneral() }
         binding.generarReporte.setOnClickListener { generarReporteEspecifico() }
-        binding.catalogoProducts.setOnClickListener { verCatalogoProductos() }
-        binding.seeAllEtiquetas.setOnClickListener { verAllEtiquetas() }
 
         binding.btnFechaInicio.setOnClickListener {
             mostrarSelectorFecha { year, month, day ->
@@ -87,21 +85,26 @@ class ReportesActivity : Fragment() {
     }
 
     private fun configurarSelectores() {
-        val listaCamaras = db.obtenerTodasLasCamaras()
+        val listaCamaras = db.camaras.getAllCamaras()
         val listaTurnos = turnos.toList()
         val listaMovimientos = movimientos.toList()
 
         val adapterCamara = ArrayAdapter(
-            requireContext(), android.R.layout.simple_spinner_item, listaCamaras.map { it.nombreCamara }
-        )
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            listaCamaras.map { it.nombreCamara })
         adapterCamara.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.selectorCamara.adapter = adapterCamara
-        binding.selectorCamara.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                camaraSeleccionadaId = listaCamaras[position].id
+        binding.selectorCamara.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>, view: View?, position: Int, id: Long
+                ) {
+                    camaraSeleccionadaId = listaCamaras[position].id
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>) {}
             }
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
 
         val adapterMovimiento =
             ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listaMovimientos)
@@ -110,10 +113,7 @@ class ReportesActivity : Fragment() {
         binding.selectorMovimiento.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
-                    parent: AdapterView<*>,
-                    view: View?,
-                    position: Int,
-                    id: Long
+                    parent: AdapterView<*>, view: View?, position: Int, id: Long
                 ) {
                     movimientoSeleccionado = if (position == 3) null else listaMovimientos[position]
                 }
@@ -127,10 +127,7 @@ class ReportesActivity : Fragment() {
         binding.selectorTurno.adapter = adapterTurno
         binding.selectorTurno.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
+                parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
                 turnoSeleccionado = listaTurnos[position]
             }
@@ -141,7 +138,7 @@ class ReportesActivity : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun generarReporteGeneral() {
-        val datos = db.obtenerReporte()
+        val datos = db.reportes.obtenerReporte()
 
         if (datos.isEmpty()) {
             Toast.makeText(requireContext(), "No hay movimientos registrados", Toast.LENGTH_SHORT)
@@ -149,21 +146,11 @@ class ReportesActivity : Fragment() {
             return
         }
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("Confirmar corte de inventario")
-            .setMessage(
-                "Esto generará el reporte general del día y eliminará de la app los " +
-                        "movimientos con ciclo completo (Entrada + Salida).\n\n" +
-                        "Las etiquetas que sigan dentro de una cámara se conservarán como " +
-                        "inventario inicial para mañana.\n\n" +
-                        "Esta acción no se puede deshacer. ¿Deseas continuar?"
-            )
-            .setPositiveButton("Sí, generar corte") { _, _ ->
+        AlertDialog.Builder(requireContext()).setTitle("Confirmar corte de inventario").setMessage(
+                "Esto generará el reporte general del día y eliminará de la app los " + "movimientos con ciclo completo (Entrada + Salida).\n\n" + "Las etiquetas que sigan dentro de una cámara se conservarán como " + "inventario inicial para mañana.\n\n" + "Esta acción no se puede deshacer. ¿Deseas continuar?"
+            ).setPositiveButton("Sí, generar corte") { _, _ ->
                 ejecutarReporteYCorte(datos)
-            }
-            .setNegativeButton("Cancelar", null)
-            .setCancelable(true)
-            .show()
+            }.setNegativeButton("Cancelar", null).setCancelable(true).show()
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -171,7 +158,7 @@ class ReportesActivity : Fragment() {
         val exportoConExito = exportarCSV(datos, "reporte_general_corte")
 
         if (exportoConExito) {
-            db.hacerCorteDeInventario()
+            db.reportes.hacerCorteDeInventario()
             Toast.makeText(
                 requireContext(),
                 "Corte realizado — las etiquetas que siguen dentro de una cámara se conservaron para mañana",
@@ -188,7 +175,7 @@ class ReportesActivity : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun generarReporteEspecifico() {
-        val datos = db.obtenerReporteFiltrado(
+        val datos = db.reportes.obtenerReporteFiltrado(
             idCamara = camaraSeleccionadaId,
             turno = turnoSeleccionado,
             movimiento = movimientoSeleccionado,
@@ -198,14 +185,18 @@ class ReportesActivity : Fragment() {
 
         if (datos.isEmpty()) {
             Toast.makeText(
-                requireContext(),
-                "No hay movimientos con esos filtros",
-                Toast.LENGTH_SHORT
+                requireContext(), "No hay movimientos con esos filtros", Toast.LENGTH_SHORT
             ).show()
             return
         }
 
-        exportarCSV(datos, "reporte_especifico")
+        val genCSV = exportarCSV(datos, "reporte_especifico")
+
+        if (genCSV) {
+            Toast.makeText(
+                requireContext(), "El archivo se ha creado correctamente", Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -226,114 +217,46 @@ class ReportesActivity : Fragment() {
                     MediaStore.MediaColumns.RELATIVE_PATH,
                     "Download/Etiquetas/Reportes/$carpetaFecha/"
                 )
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
             }
+
 
             val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-
-            if (uri != null) {
-                resolver.openOutputStream(uri)?.use { outputStream ->
-                    outputStream.write(
-                        "Etiqueta,Clave Producto,Descripcion,Piezas,Kilos,N. Empaque, Lote,Fecha,Hora,Fecha Escaneo,Zona,Camara,Turno,Movimiento,Escaneado por,Notas\n".toByteArray()
-                    )
-                    datos.forEach { e ->
-                        outputStream.write(
-                            "=\"${e.etiquetaEscaneada}\",${e.claveProducto},${e.descripcionArticulo},${e.piezas},${e.kilos},${e.numEmpaque}, ${e.lote},${e.fecha},${e.hora},${e.fechaEscaneo},${e.zona},${e.camara},${e.turno},${e.tipoMovimiento},${e.escaneadoPor},${e.notas}\n".toByteArray()
-                        )
-                    }
+                ?: return false.also {
+                    Toast.makeText(
+                        requireContext(), "Error al crear el archivo", Toast.LENGTH_SHORT
+                    ).show()
                 }
 
+            val outputStream = resolver.openOutputStream(uri)
+            if (outputStream == null) {
+                resolver.delete(uri, null, null)
                 Toast.makeText(
-                    requireContext(),
-                    "Reporte guardado en Etiquetas/Reportes/$carpetaFecha/$nombreArchivo",
-                    Toast.LENGTH_LONG
+                    requireContext(), "No se pudo escribir el archivo", Toast.LENGTH_SHORT
                 ).show()
-                true
-            } else {
-                Toast.makeText(requireContext(), "Error al crear el archivo", Toast.LENGTH_SHORT)
-                    .show()
-                false
+                return false
             }
+
+            outputStream.use { os ->
+                os.write("Etiqueta,Clave Producto,Descripcion,Piezas,Kilos,N. Empaque, Lote,Fecha,Hora,Fecha Escaneo,Zona,Camara,Turno,Movimiento,Escaneado por,Notas \n".toByteArray())
+                datos.forEach { e -> os.write("=\"${e.etiquetaEscaneada}\",${e.claveProducto},${e.descripcionArticulo},${e.piezas},${e.kilos},${e.numEmpaque}, ${e.lote},${e.fecha},${e.hora},${e.fechaEscaneo},${e.zona},${e.camara},${e.turno},${e.tipoMovimiento},${e.escaneadoPor},${e.notas} \n".toByteArray()) }
+            }
+
+            contentValues.clear()
+            contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
+            resolver.update(uri, contentValues, null, null)
+            true
+
         } catch (e: Exception) {
             Toast.makeText(
-                requireContext(),
-                "Error al generar reporte: ${e.message}",
-                Toast.LENGTH_SHORT
+                requireContext(), "Error al generar reporte: ${e.message}", Toast.LENGTH_SHORT
             ).show()
             false
         }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun exportarxlsx(datos: List<EtiquetaGuardada>, prefijoNombre: String): Boolean {
-        val formatoArchivo = DateTimeFormatter.ofPattern("dd-MM-yyyy HH-mm-ss")
-        val formatoCarpeta = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-        val ahora = LocalDateTime.now()
-
-        val carpetaFecha = ahora.format(formatoCarpeta)
-        val nombreArchivo = "${prefijoNombre}_${ahora.format(formatoArchivo)}.xlsx"
-        return try {
-            val resolver = requireContext().contentResolver
-            val contentValues = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, nombreArchivo)
-                put(MediaStore.MediaColumns.MIME_TYPE, "text/csv")
-                put(
-                    MediaStore.MediaColumns.RELATIVE_PATH,
-                    "Download/Etiquetas/Reportes/$carpetaFecha/"
-                )
-            }
-
-            val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-
-            if (uri != null) {
-                resolver.openOutputStream(uri)?.use { outputStream ->
-                    outputStream.write(
-                        "Etiqueta,Clave Producto,Descripcion,Piezas,Kilos,Lote,Fecha,Hora,Fecha Escaneo,Zona,Camara,Turno,Movimiento,Escaneado por,Notas\n".toByteArray()
-                    )
-                    datos.forEach { e ->
-                        outputStream.write(
-                            "=\"${e.etiquetaEscaneada}\",${e.claveProducto},${e.descripcionArticulo},${e.piezas},${e.kilos},${e.lote},${e.fecha},${e.hora},${e.fechaEscaneo},${e.zona},${e.camara},${e.turno},${e.tipoMovimiento},${e.escaneadoPor},${e.notas}\n".toByteArray()
-                        )
-                    }
-                }
-
-                Toast.makeText(
-                    requireContext(),
-                    "Reporte guardado en Etiquetas/Reportes/$carpetaFecha/$nombreArchivo",
-                    Toast.LENGTH_LONG
-                ).show()
-                true
-            } else {
-                Toast.makeText(requireContext(), "Error al crear el archivo", Toast.LENGTH_SHORT)
-                    .show()
-                false
-            }
-        } catch (e: Exception) {
-            Toast.makeText(
-                requireContext(),
-                "Error al generar reporte: ${e.message}",
-                Toast.LENGTH_SHORT
-            ).show()
-            false
-        }
-    }
-
-    fun verCatalogoProductos() {
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, SelectProductos())
-            .addToBackStack(null)
-            .commit()
-    }
-
-    fun verAllEtiquetas() {
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, SeeAllEtiquetasFragment())
-            .addToBackStack(null)
-            .commit()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        db.close()
         _binding = null
     }
 }

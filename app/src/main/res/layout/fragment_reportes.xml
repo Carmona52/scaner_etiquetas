@@ -5,13 +5,15 @@
     android:id="@+id/reportesMain"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginHorizontal="5dp"
+    android:fitsSystemWindows="true"
     android:orientation="vertical"
-    tools:context=".ReportesActivity"
-    android:fitsSystemWindows="true">
+    tools:context=".ReportesActivity">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
         android:text="@string/generateReport"
         android:textAlignment="center"
         android:textColor="@color/black"
@@ -30,7 +32,6 @@
         android:id="@+id/generarReporteGeneral"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
         android:backgroundTint="@color/green"
         android:text="@string/generateReport"
         android:textColor="@color/white"
@@ -39,7 +40,6 @@
     <com.google.android.material.divider.MaterialDivider
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        android:layout_marginHorizontal="10dp"
         android:layout_marginVertical="5dp"
         app:dividerColor="@color/black" />
 
@@ -55,15 +55,45 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
         android:text="@string/gen_specific_report"
         android:textAlignment="center"
         android:textColor="@color/black"
-        android:textSize="15sp" />
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/select_camara"
+            android:textColor="@color/black" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/selectorCamara"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:orientation="horizontal">
 
@@ -71,7 +101,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:text="@string/select_camara"
+            android:text="@string/select_mov"
+            android:textAlignment="textStart"
             android:textColor="@color/black" />
 
         <TextView
@@ -80,17 +111,17 @@
             android:layout_weight="2"
             android:text="@string/select_turno"
             android:textColor="@color/black" />
+
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
         android:layout_marginTop="10dp"
         android:orientation="horizontal">
 
         <Spinner
-            android:id="@+id/selectorCamara"
+            android:id="@+id/selectorMovimiento"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2" />
@@ -100,43 +131,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2" />
-
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/select_mov"
-            android:textAlignment="textStart"
-            android:textColor="@color/black" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal">
-
-        <Spinner
-            android:id="@+id/selectorMovimiento"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
         android:layout_marginTop="10dp"
         android:orientation="horizontal">
 
@@ -146,8 +145,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="5dp"
             android:layout_weight="1"
-            android:text="@string/fecha_inicio"
-            />
+            android:text="@string/fecha_inicio" />
 
         <Button
             android:id="@+id/btnFechaFin"
@@ -161,7 +159,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
         android:layout_marginTop="10dp"
         android:orientation="horizontal">
 
@@ -174,39 +171,5 @@
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textStyle="bold" />
-
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginHorizontal="10dp"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/catalogoProducts"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:backgroundTint="@color/blue"
-            android:text="@string/ver_cat_logo_de_productos"
-            android:textColor="@color/white" />
-
-        <Button
-            android:id="@+id/seeAllEtiquetas"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:backgroundTint="@color/green"
-            android:text="@string/ver_etiquetas_escaneadas"
-            android:textColor="@color/white" />
-    </LinearLayout>
-
-
 </LinearLayout>

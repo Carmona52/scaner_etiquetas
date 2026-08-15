@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="5dp"
+    tools:context=".VariosFragment">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="10dp"
+        android:contentDescription="@string/logo_de_patsa"
+        android:src="@drawable/logopatsa" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="10dp"
+        android:text="Versión 2.0"
+        android:textAlignment="center" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/productos"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:backgroundTint="@android:color/transparent"
+            android:drawableEnd="@drawable/baseline_local_grocery_store_24"
+            android:drawablePadding="12dp"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp"
+            android:text="Catálogo de productos"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/camaras"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@android:color/transparent"
+            android:drawableEnd="@drawable/baseline_meeting_room_24"
+            android:drawablePadding="12dp"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp"
+            android:text="Catálogo de cámaras"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/movimientos"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@android:color/transparent"
+            android:drawableEnd="@drawable/baseline_move_up_24"
+            android:drawablePadding="12dp"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp"
+            android:text="Catálogo de movimientos"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/etiquetas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@android:color/transparent"
+            android:drawableEnd="@drawable/baseline_receipt_long_24"
+            android:drawablePadding="12dp"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:text="Ver todas las etiquetas escaneadas"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/cerrarSesion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="100dp"
+        android:backgroundTint="@color/red"
+        android:text="Cerrar sesión"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+</LinearLayout>
