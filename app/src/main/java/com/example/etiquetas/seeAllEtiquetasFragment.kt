@@ -78,12 +78,12 @@ class SeeAllEtiquetasFragment : Fragment() {
 
     private fun setKilos(){
         val peso = db.camaras.getCameraWeight(camaraSeleccionadaId)
-        binding.totalWeight.setText("Kilos totales ${peso}kg")
+        binding.totalWeight.setText("Kilos Totales en esta Camara ${peso}kg")
     }
 
     private fun getTotalCestas(){
         val cestas = db.camaras.getTotalCestas(camaraSeleccionadaId)
-        binding.totalCestas.setText("Total de Cestas: $cestas")
+        binding.totalCestas.setText("Total de Cestas Dentro la camara: $cestas")
     }
 
 

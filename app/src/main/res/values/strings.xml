@@ -31,6 +31,8 @@
     <string name="ver_cat_logo_de_productos">Ver Catálogo de Productos</string>
     <string name="catalogo_de_productos">Catalogo de Productos</string>
     <string name="all_scan_etiquetas">Etiquetas Escaneadas</string>
+    <string name="see_historico">Ver Todas las Transacciones</string>
     <string name="camaras">Cámaras</string>
+    <string name="movimientos">Movimientos</string>
 
 </resources>

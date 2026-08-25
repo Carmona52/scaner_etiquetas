@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TableRow
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.etiquetas.database.DataBase
 import com.example.etiquetas.database.methods.CamaraGuardada
@@ -56,8 +57,19 @@ class CamarasFragment : Fragment() {
                 context = context,
                 texto = texto.toString(), tipo = TableCellFactory.TypeCelda.Tabla
             )
+            textView.setOnClickListener {
+                val detalles = CameraDetails.newInstance(camara)
+                loadFragment(detalles)
+            }
+
             fila.addView(textView)
         }
         binding.tableLayout.addView(fila)
     }
+
+    fun loadFragment(fragment: Fragment) {
+        parentFragmentManager.beginTransaction().replace(R.id.fragment_container, fragment)
+            .addToBackStack(null).commit()
+    }
+
 }

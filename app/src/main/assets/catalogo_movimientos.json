@@ -101,6 +101,6 @@
   },
   {
     "tipoMovimiento": "INVENTARIO",
-    "factor": 0
+    "factor": 1
   }
 ]

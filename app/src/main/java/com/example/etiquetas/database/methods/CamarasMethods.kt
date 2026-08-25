@@ -1,15 +1,20 @@
 package com.example.etiquetas.database.methods
 
+import android.annotation.SuppressLint
+import android.os.Parcelable
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.SQLiteStatement
-
+import kotlinx.parcelize.Parcelize
+import java.math.BigDecimal
+import java.math.RoundingMode
+@Parcelize
 data class CamaraGuardada(
     val id: Int,
     val idZona: Int,
     val numCamara: Int,
     val nombreCamara: String,
     val descripcion: String?
-)
+): Parcelable
 
 data class ActualizarCamara(
     val idZona: Int, val numCamara: Int, val nombreCamara: String, val descripcion: String?
@@ -55,7 +60,7 @@ class Camaras(private val connection: SQLiteConnection) {
                 stmt.bindInt(1, idCamara ?: 0)
                 if (stmt.step()) peso = stmt.getDouble(0)
             }
-        return peso
+        return String.format("%.2f", peso).toDouble()
     }
 
     fun getTotalCestas(idCamara: Int?): Int {
