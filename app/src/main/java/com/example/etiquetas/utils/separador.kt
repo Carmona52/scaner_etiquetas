@@ -34,8 +34,7 @@ data class Etiqueta(
     val notas: String,
 
     val zona: String? = "0",
-    val camara: String? = "0",
-    val tipoMovimiento: String? = "0"
+    val camara: String? = "0"
 )
 
 @RequiresApi(Build.VERSION_CODES.O)

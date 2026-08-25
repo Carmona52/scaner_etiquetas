@@ -18,7 +18,7 @@ object TableCellFactory {
         return TextView(context).apply {
 
             layoutParams = TableRow.LayoutParams(
-                if (weight > 0f) 0 else TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT,
                 TableRow.LayoutParams.WRAP_CONTENT,
                 weight
             )

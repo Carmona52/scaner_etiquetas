@@ -19,6 +19,18 @@ class Movimientos(private val connection: SQLiteConnection) {
         return resultado
     }
 
+    fun getMovimientosByFactor(factor: Int): List<MovimientoGuardado> {
+        val resultado = mutableListOf<MovimientoGuardado>()
+        connection.prepare("SELECT id, tipoMovimiento, factor FROM Movimiento WHERE factor = ? ORDER BY id ASC")
+            .use { stmt ->
+                stmt.bindInt(1, factor)
+                while (stmt.step()) {
+                    resultado.add(mapearFila(stmt))
+                }
+            }
+        return resultado
+    }
+
     fun upsertMovimiento(tipoMovimiento: String, factor: Int) {
         connection.prepare("INSERT INTO Movimiento (tipoMovimiento, factor) VALUES (?, ?) ON CONFLICT(tipoMovimiento) DO UPDATE SET factor = excluded.factor")
             .use { stmt ->
@@ -28,27 +40,6 @@ class Movimientos(private val connection: SQLiteConnection) {
             }
     }
 
-
-    fun updateMovimiento(id: Int, tipoMovimiento: String, factor: Int): Boolean {
-        return try {
-            connection.prepare(
-                """
-                UPDATE Movimiento 
-                SET tipoMovimiento = ?, factor = ? 
-                WHERE id = ?
-                """.trimIndent()
-            ).use { stmt ->
-                stmt.bindText(1, tipoMovimiento)
-                stmt.bindInt(2, factor)
-                stmt.bindInt(3, id)
-                stmt.step()
-            }
-            true
-        } catch (e: Exception) {
-            Log.e("MovimientosDAO", "Error al actualizar movimiento con ID: $id", e)
-            false
-        }
-    }
 
     fun deleteMovimiento(id: Int): Boolean {
         return try {

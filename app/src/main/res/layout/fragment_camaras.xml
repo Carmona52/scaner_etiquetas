@@ -27,17 +27,6 @@
             android:textSize="24sp"
             android:textStyle="bold" />
 
-        <!--        <ImageButton-->
-        <!--            android:id="@+id/addProduct"-->
-        <!--            android:layout_width="32dp"-->
-        <!--            android:layout_height="32dp"-->
-        <!--            android:layout_alignParentEnd="true"-->
-        <!--            android:layout_centerVertical="true"-->
-        <!--            android:background="?attr/selectableItemBackgroundBorderless"-->
-        <!--            android:scaleType="fitCenter"-->
-        <!--            android:src="@drawable/baseline_add_circle_outline_24"-->
-        <!--            app:tint="@android:color/holo_blue_dark" />-->
-
     </RelativeLayout>
 
     <ScrollView
@@ -57,41 +46,36 @@
             <TableLayout
                 android:id="@+id/tableLayout"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:stretchColumns="*">
 
-                <TableRow>
-
+                <TableRow android:background="#EEEEEE">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:gravity="center"
                         android:padding="8dp"
-                        android:text="Número de \nCámara"
-                        android:textStyle="bold" />
-
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="8dp"
-                        android:text="Zona"
+                        android:text="Número de\nCámara"
+                        android:textColor="@color/black"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:gravity="center_vertical"
                         android:padding="8dp"
                         android:text="Nombre de Cámara"
+                        android:textColor="@color/black"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="2"
+                        android:gravity="center_vertical"
                         android:padding="8dp"
                         android:text="Descripción"
+                        android:textColor="@color/black"
                         android:textStyle="bold" />
                 </TableRow>
 

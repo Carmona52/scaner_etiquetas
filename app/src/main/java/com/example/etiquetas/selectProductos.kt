@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TableRow
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import com.example.etiquetas.database.DataBase
 import com.example.etiquetas.database.methods.productosGuardados
@@ -22,6 +23,11 @@ class SelectProductos : Fragment() {
     private val binding get() = _binding!!
     private lateinit var db: DataBase
 
+    private var offsetActual = 0
+    private val limitePorPagina = 20
+    private var cargandoDatos = false
+    private var hayMasDatos = true
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -32,8 +38,8 @@ class SelectProductos : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         db = DataBase.getInstance(requireContext())
-
-        actualizarTabla()
+        configurarScroll()
+        tablaInicial()
         inicializarEventos()
     }
 
@@ -41,30 +47,62 @@ class SelectProductos : Fragment() {
         binding.addProduct.setOnClickListener { verificarIdentidad(requireContext()) }
     }
 
-    private fun actualizarTabla() {
-        val productos = db.productos.getAllProductos()
+    private fun tablaInicial() {
         val cantidadFilas = binding.tableLayout.childCount
         for (i in cantidadFilas - 1 downTo 1) {
             binding.tableLayout.removeViewAt(i)
         }
 
-        productos.forEach { agregarFila(it) }
+        offsetActual = 0
+        hayMasDatos = true
+        cargarProductos()
     }
 
     private fun agregarFila(producto: productosGuardados) {
         val context = requireContext()
-        val fila = TableRow(requireContext())
+        val fila = TableRow(context)
         val valores = listOf(producto.claveProducto, producto.descripcion)
-        val longitudFila = listOf(1f, 2f)
 
         valores.forEachIndexed { index, texto ->
-            val weight = longitudFila.getOrElse(index) { 0f }
+
             val textView = TableCellFactory.createCelda(
-                context = context, texto = texto.toString(), weight = weight
-            )
+                context = context, texto = texto)
             fila.addView(textView)
         }
         binding.tableLayout.addView(fila)
+    }
+
+    private fun configurarScroll() {
+        binding.scrollView.setOnScrollChangeListener(
+            NestedScrollView.OnScrollChangeListener { v, _, scrollY, _, _ ->
+                val seLlegoAlFinal = scrollY >= (v.getChildAt(0).measuredHeight - v.measuredHeight)
+                if (seLlegoAlFinal && !cargandoDatos && hayMasDatos) {
+                    binding.arrowDrop.visibility = View.VISIBLE
+                    cargarProductos()
+                } else {
+                    binding.arrowDrop.visibility = View.GONE
+                }
+            }
+        )
+    }
+
+    private fun cargarProductos() {
+        if (!hayMasDatos || cargandoDatos) return
+        cargandoDatos = true
+
+        val nuevosProductos = db.productos.getProductosPaginados(limitePorPagina, offsetActual)
+
+        if (nuevosProductos.isNotEmpty()) {
+            nuevosProductos.forEach { agregarFila(it) }
+            offsetActual += limitePorPagina
+            if (nuevosProductos.size < limitePorPagina) {
+                hayMasDatos = false
+            }
+        } else {
+            hayMasDatos = false
+        }
+
+        cargandoDatos = false
     }
 
     private fun verificarIdentidad(context: Context) {
@@ -80,10 +118,13 @@ class SelectProductos : Fragment() {
 
         layout.addView(input)
 
-        val dialog =
-            AlertDialog.Builder(context).setTitle("Por favor ingrese la contraseña").setView(layout)
-                .setPositiveButton("Aceptar", null).setNegativeButton("Cancelar", null)
-                .setCancelable(true).create()
+        val dialog = AlertDialog.Builder(context)
+            .setTitle("Por favor ingrese la contraseña")
+            .setView(layout)
+            .setPositiveButton("Aceptar", null)
+            .setNegativeButton("Cancelar", null)
+            .setCancelable(true)
+            .create()
 
         dialog.setOnShowListener {
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
@@ -119,10 +160,13 @@ class SelectProductos : Fragment() {
         layout.addView(codeInput)
         layout.addView(descriptionInput)
 
-        val dialog =
-            AlertDialog.Builder(requireContext()).setTitle("Insertar o actualizar elemento")
-                .setView(layout).setPositiveButton("Guardar", null)
-                .setNegativeButton("Cancelar", null).setCancelable(true).create()
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle("Insertar o actualizar elemento")
+            .setView(layout)
+            .setPositiveButton("Guardar", null)
+            .setNegativeButton("Cancelar", null)
+            .setCancelable(true)
+            .create()
 
         dialog.setOnShowListener {
             val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
@@ -134,11 +178,13 @@ class SelectProductos : Fragment() {
                 if (codigo.isNotEmpty() && descripcion.isNotEmpty()) {
                     db.productos.upsertProducto(codigo, descripcion)
                     Toast.makeText(requireContext(), "Producto guardado", Toast.LENGTH_SHORT).show()
-                    actualizarTabla()
+                    tablaInicial()
                     dialog.dismiss()
                 } else {
                     Toast.makeText(
-                        requireContext(), "Por favor completa ambos campos", Toast.LENGTH_SHORT
+                        requireContext(),
+                        "Por favor completa ambos campos",
+                        Toast.LENGTH_SHORT
                     ).show()
                 }
             }

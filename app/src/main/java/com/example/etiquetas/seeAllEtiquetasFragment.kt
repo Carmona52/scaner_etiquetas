@@ -12,18 +12,14 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import com.example.etiquetas.database.DataBase
-import com.example.etiquetas.database.methods.CamaraGuardada
 import com.example.etiquetas.database.methods.EtiquetaGuardada
-import com.example.etiquetas.database.methods.ZonaGuardada
 import com.example.etiquetas.databinding.FragmentSeeAllEtiquetasBinding
 import com.example.etiquetas.utils.DateBuilders
 
 class SeeAllEtiquetasFragment : Fragment() {
     private var _binding: FragmentSeeAllEtiquetasBinding? = null
     private val binding get() = _binding!!
-
-    private var zonaSeleccionada: ZonaGuardada? = null
-    private var camaraSeleccionada: CamaraGuardada? = null
+    private var camaraSeleccionadaId: Int? = 0
 
 
     private lateinit var db: DataBase
@@ -45,59 +41,31 @@ class SeeAllEtiquetasFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun configurarSelectores() {
-        val zonas = db.zonas.getAllZonas()
-
-        val adapterZona = ArrayAdapter(
-            requireContext(), android.R.layout.simple_spinner_item, zonas.map { it.nombreZona })
-        adapterZona.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerZona.adapter = adapterZona
-
-        binding.spinnerZona.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>, view: View?, position: Int, id: Long
-            ) {
-                zonaSeleccionada = zonas[position]
-                actualizarCamaras(zonaSeleccionada!!.id)
-                actualizarTablaFiltrada()
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-
+        val listaCamaras = db.camaras.getAllCamaras()
+        val adapterCamara = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            listaCamaras.map { it.nombreCamara })
+        adapterCamara.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerCamara.adapter = adapterCamara
         binding.spinnerCamara.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
-                val camaras =
-                    zonaSeleccionada?.let { db.camaras.getCamarasPorZona(it.id) } ?: emptyList()
-                if (position < camaras.size) {
-                    camaraSeleccionada = camaras[position]
-                    actualizarTablaFiltrada()
-                }
+                camaraSeleccionadaId = listaCamaras[position].id
+                actualizarTablaFiltrada()
+                setKilos()
+                getTotalCestas()
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
-
-        if (zonas.isNotEmpty()) {
-            zonaSeleccionada = zonas[0]
-            actualizarCamaras(zonas[0].id)
-        }
-    }
-
-    private fun actualizarCamaras(idZona: Int) {
-        val camaras = db.camaras.getCamarasPorZona(idZona)
-        val adapterCamara = ArrayAdapter(
-            requireContext(), android.R.layout.simple_spinner_item, camaras.map { it.nombreCamara })
-        adapterCamara.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerCamara.adapter = adapterCamara
-        camaraSeleccionada = camaras.firstOrNull()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun actualizarTablaFiltrada() {
         val resultados = db.reportes.obtenerReporteFiltrado(
-            idZona = zonaSeleccionada?.id, idCamara = camaraSeleccionada?.id
+            idCamara = camaraSeleccionadaId
         )
 
         val cantidadFilas = binding.tableLayout.childCount
@@ -106,6 +74,16 @@ class SeeAllEtiquetasFragment : Fragment() {
         }
 
         resultados.forEach { agregarFilaDesdeDB(it) }
+    }
+
+    private fun setKilos(){
+        val peso = db.camaras.getCameraWeight(camaraSeleccionadaId)
+        binding.totalWeight.setText("Kilos totales ${peso}kg")
+    }
+
+    private fun getTotalCestas(){
+        val cestas = db.camaras.getTotalCestas(camaraSeleccionadaId)
+        binding.totalCestas.setText("Total de Cestas: $cestas")
     }
 
 

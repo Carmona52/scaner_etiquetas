@@ -10,11 +10,12 @@ class Reportes(private val connection: SQLiteConnection) {
         connection.prepare(
             """
             SELECT e.id, e.etiquetaEscaneada, e.claveProducto, a.descripcion, e.piezas, e.kilos, e.lote,
-                   e.fecha, e.hora, e.fechaEscaneo, z.nombreZona, c.nombreCamara, e.turno, e.tipoMovimiento, e.escaneadoPor, e.notas, e.numEmpaque
+                   e.fecha, e.hora, e.fechaEscaneo, z.nombreZona, c.nombreCamara, e.turno, m.tipoMovimiento, e.idMovimiento, e.escaneadoPor, e.notas, e.numEmpaque
             FROM Etiquetas e
             LEFT JOIN Articulos a ON e.claveProducto = a.claveProducto
             LEFT JOIN Zonas z ON e.idZona = z.id
             LEFT JOIN Camaras c ON e.idCamara = c.id
+            LEFT JOIN Movimiento m ON e.idMovimiento = m.id
             ORDER BY e.id ASC
             """.trimIndent()
         ).use { stmt ->
@@ -37,7 +38,8 @@ class Reportes(private val connection: SQLiteConnection) {
                     FROM Etiquetas
                     GROUP BY etiquetaEscaneada, idCamara
                 ) ultimo ON e.id = ultimo.maxId
-                WHERE e.tipoMovimiento = 'Entrada'
+                JOIN Movimiento m ON e.idMovimiento = m.id
+                WHERE m.tipoMovimiento = 'Entrada'
             )
             """.trimIndent()
         )
@@ -48,6 +50,7 @@ class Reportes(private val connection: SQLiteConnection) {
         idCamara: Int? = null,
         turno: String? = null,
         movimiento: String? = null,
+        factor: Int? = null,
         fechaInicioISO: String? = null,
         fechaFinISO: String? = null
     ): List<EtiquetaGuardada> {
@@ -60,7 +63,10 @@ class Reportes(private val connection: SQLiteConnection) {
             condiciones.add("e.turno = ?"); valores.add(turno)
         }
         if (movimiento != null) {
-            condiciones.add("e.tipoMovimiento = ?"); valores.add(movimiento)
+            condiciones.add("m.tipoMovimiento = ?"); valores.add(movimiento)
+        }
+        if (factor != null) {
+            condiciones.add("m.factor = ?"); valores.add(factor.toString())
         }
 
         if (fechaInicioISO != null && fechaFinISO != null) {
@@ -75,18 +81,18 @@ class Reportes(private val connection: SQLiteConnection) {
             valores.add("${fechaFinISO}T23:59:59")
         }
 
-        val whereClause =
-            if (condiciones.isNotEmpty()) "WHERE " + condiciones.joinToString(" AND ") else ""
+        val whereClause = if (condiciones.isNotEmpty()) "WHERE " + condiciones.joinToString(" AND ") else ""
 
         val resultado = mutableListOf<EtiquetaGuardada>()
         connection.prepare(
             """
             SELECT e.id, e.etiquetaEscaneada, e.claveProducto, a.descripcion, e.piezas, e.kilos, e.lote,
-                   e.fecha, e.hora, e.fechaEscaneo, z.nombreZona, c.nombreCamara, e.turno, e.tipoMovimiento, e.escaneadoPor, e.notas, e.numEmpaque
+                   e.fecha, e.hora, e.fechaEscaneo, z.nombreZona, c.nombreCamara, e.turno, m.tipoMovimiento, e.idMovimiento, e.escaneadoPor, e.notas, e.numEmpaque
             FROM Etiquetas e
             LEFT JOIN Articulos a ON e.claveProducto = a.claveProducto
             LEFT JOIN Zonas z ON e.idZona = z.id
             LEFT JOIN Camaras c ON e.idCamara = c.id
+            LEFT JOIN Movimiento m ON e.idMovimiento = m.id
             $whereClause
             ORDER BY e.id DESC
             """.trimIndent()
@@ -115,9 +121,10 @@ class Reportes(private val connection: SQLiteConnection) {
             camara = stmt.getText(11),
             turno = stmt.getText(12),
             tipoMovimiento = stmt.getText(13),
-            escaneadoPor = stmt.getText(14),
-            notas = stmt.getText(15),
-            numEmpaque = stmt.getText(16)
+            idMovimiento = stmt.getInt(14),
+            escaneadoPor = stmt.getText(15),
+            notas = stmt.getText(16),
+            numEmpaque = stmt.getText(17)
         )
     }
 }
