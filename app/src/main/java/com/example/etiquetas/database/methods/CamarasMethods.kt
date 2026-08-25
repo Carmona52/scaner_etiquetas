@@ -27,18 +27,6 @@ class Camaras(private val connection: SQLiteConnection) {
         return resultado
     }
 
-    fun getCamarasPorZona(idZona: Int): List<CamaraGuardada> {
-        val resultado = mutableListOf<CamaraGuardada>()
-        connection.prepare("SELECT id, idZona, numCamara, nombreCamara, descripcion FROM Camaras WHERE idZona = ? ORDER BY numCamara ASC")
-            .use { stmt ->
-                stmt.bindInt(1, idZona)
-                while (stmt.step()) {
-                    resultado.add(mapearFila(stmt))
-                }
-            }
-        return resultado
-    }
-
     fun getCamaraName(id: Int): String {
         var nombre: String? = null
         connection.prepare("SELECT nombreCamara FROM Camaras WHERE id = ?").use { stmt ->
@@ -46,28 +34,6 @@ class Camaras(private val connection: SQLiteConnection) {
             if (stmt.step()) nombre = stmt.getText(0)
         }
         return nombre ?: ""
-    }
-
-    fun obtenerCamaraActualId(etiquetaEscaneada: String): Int? {
-        var idCamaraActual: Int? = null
-        connection.prepare(
-            """
-            SELECT e.idCamara
-            FROM Etiquetas e
-            INNER JOIN (
-                SELECT idCamara, MAX(id) AS maxId
-                FROM Etiquetas
-                WHERE etiquetaEscaneada = ?
-                GROUP BY idCamara
-            ) ultimo ON e.id = ultimo.maxId
-            WHERE e.tipoMovimiento IN ('Entrada', 'Inventario')
-        LIMIT 1
-            """.trimIndent()
-        ).use { stmt ->
-            stmt.bindText(1, etiquetaEscaneada)
-            if (stmt.step()) idCamaraActual = stmt.getInt(0)
-        }
-        return idCamaraActual
     }
 
     fun upsertCamara(camara: ActualizarCamara) {
@@ -82,14 +48,34 @@ class Camaras(private val connection: SQLiteConnection) {
         }
     }
 
-
-    private fun mapearFila(stmt: SQLiteStatement): CamaraGuardada {
-        return CamaraGuardada(
-            id = stmt.getInt(0),
-            idZona = stmt.getInt(1),
-            numCamara = stmt.getInt(2),
-            nombreCamara = stmt.getText(3),
-            descripcion = stmt.getText(4)
-        )
+    fun getCameraWeight(idCamara: Int?): Double {
+        var peso = 0.0
+        connection.prepare("SELECT totalKilos FROM InventarioCamaras WHERE idCamara = ?")
+            .use { stmt ->
+                stmt.bindInt(1, idCamara ?: 0)
+                if (stmt.step()) peso = stmt.getDouble(0)
+            }
+        return peso
     }
+
+    fun getTotalCestas(idCamara: Int?): Int {
+        var cestas = 0
+        connection.prepare("SELECT SUM(cantidadCestas) FROM ConteoCestas WHERE idCamara = ?")
+            .use { stmt ->
+                stmt.bindInt(1, idCamara ?: 0)
+                if (stmt.step()) cestas = stmt.getInt(0)
+            }
+        return cestas
+    }
+
+
+private fun mapearFila(stmt: SQLiteStatement): CamaraGuardada {
+    return CamaraGuardada(
+        id = stmt.getInt(0),
+        idZona = stmt.getInt(1),
+        numCamara = stmt.getInt(2),
+        nombreCamara = stmt.getText(3),
+        descripcion = stmt.getText(4)
+    )
+}
 }

@@ -48,14 +48,13 @@ class CamarasFragment : Fragment() {
     private fun agregarFila(camara: CamaraGuardada) {
         val context = requireContext()
         val fila = TableRow(context)
-        val valores =
-            listOf(camara.numCamara, camara.idZona, camara.nombreCamara, camara.descripcion ?: "")
+        val valores = listOf(camara.numCamara, camara.nombreCamara, camara.descripcion ?: "")
 
 
         valores.forEachIndexed { index, texto ->
             val textView = TableCellFactory.createCelda(
                 context = context,
-                texto = texto.toString(),
+                texto = texto.toString(), tipo = TableCellFactory.TypeCelda.Tabla
             )
             fila.addView(textView)
         }

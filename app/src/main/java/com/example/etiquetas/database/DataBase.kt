@@ -8,8 +8,8 @@ import androidx.sqlite.execSQL
 import com.example.etiquetas.database.methods.ActualizarCamara
 import com.example.etiquetas.database.methods.Camaras
 import com.example.etiquetas.database.methods.Etiqueta
-import com.example.etiquetas.database.methods.Reportes
 import com.example.etiquetas.database.methods.Productos
+import com.example.etiquetas.database.methods.Reportes
 import com.example.etiquetas.database.methods.Zonas
 import org.json.JSONArray
 
@@ -57,7 +57,7 @@ class DataBase private constructor(private val context: Context) {
         connection.execSQL(
             """
             CREATE TABLE IF NOT EXISTS Articulos (
-                claveProducto TEXT PRIMARY KEY,
+                claveProducto TEXT PRIMARY KEY NOT NULL UNIQUE,
                 descripcion TEXT NOT NULL
             )
             """.trimIndent()
@@ -120,6 +120,20 @@ class DataBase private constructor(private val context: Context) {
 
         connection.execSQL(
             """
+            CREATE TABLE IF NOT EXISTS ConteoCestas(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                idProducto TEXT NOT NULL,
+                idCamara INTEGER NOT NULL,
+                cantidadCestas INTEGER NOT NULL DEFAULT 0,
+                UNIQUE(idProducto, idCamara), -- AGREGADO PARA QUE FUNCIONE EL "ON CONFLICT"
+                FOREIGN KEY (idProducto) REFERENCES Articulos(claveProducto),
+                FOREIGN KEY (idCamara) REFERENCES Camaras(id)
+            )
+            """.trimIndent()
+        )
+
+        connection.execSQL(
+            """
             CREATE TABLE IF NOT EXISTS Etiquetas (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 etiquetaEscaneada TEXT NOT NULL,
@@ -136,7 +150,6 @@ class DataBase private constructor(private val context: Context) {
                 idTarimas INTEGER,
                 idMovimiento INTEGER,
                 turno TEXT NOT NULL,
-                tipoMovimiento TEXT NOT NULL,
                 escaneadoPor TEXT NOT NULL,
                 notas TEXT NOT NULL DEFAULT '',
                 FOREIGN KEY (claveProducto) REFERENCES Articulos(claveProducto),
@@ -161,10 +174,10 @@ class DataBase private constructor(private val context: Context) {
             INSERT INTO InventarioCamaras (idCamara, totalKilos)
             VALUES (
                 NEW.idCamara, 
-                (CAST(NEW.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE tipoMovimiento = NEW.tipoMovimiento), 1))
+                (CAST(NEW.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1))
             )
             ON CONFLICT(idCamara) DO UPDATE SET
-                totalKilos = totalKilos + (CAST(NEW.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE tipoMovimiento = NEW.tipoMovimiento), 1));
+                totalKilos = totalKilos + (CAST(NEW.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1));
         END;
         """.trimIndent()
         )
@@ -174,19 +187,18 @@ class DataBase private constructor(private val context: Context) {
         CREATE TRIGGER IF NOT EXISTS trg_actualizar_kilos_camara_UPDATE
         AFTER UPDATE ON Etiquetas
         BEGIN
-            -- Restar el valor anterior
+        
             UPDATE InventarioCamaras 
-            SET totalKilos = totalKilos - (CAST(OLD.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE tipoMovimiento = OLD.tipoMovimiento), 1))
+            SET totalKilos = totalKilos - (CAST(OLD.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 1))
             WHERE idCamara = OLD.idCamara;
 
-            -- Sumar el nuevo valor
             INSERT INTO InventarioCamaras (idCamara, totalKilos)
             VALUES (
                 NEW.idCamara, 
-                (CAST(NEW.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE tipoMovimiento = NEW.tipoMovimiento), 1))
+                (CAST(NEW.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1))
             )
             ON CONFLICT(idCamara) DO UPDATE SET
-                totalKilos = totalKilos + (CAST(NEW.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE tipoMovimiento = NEW.tipoMovimiento), 1));
+                totalKilos = totalKilos + (CAST(NEW.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1));
         END;
         """.trimIndent()
         )
@@ -197,11 +209,62 @@ class DataBase private constructor(private val context: Context) {
         AFTER DELETE ON Etiquetas
         BEGIN
             UPDATE InventarioCamaras 
-            SET totalKilos = totalKilos - (CAST(OLD.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE tipoMovimiento = OLD.tipoMovimiento), 1))
+            SET totalKilos = totalKilos - (CAST(OLD.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 1))
             WHERE idCamara = OLD.idCamara;
         END;
         """.trimIndent()
         )
+
+        connection.execSQL(
+            """
+            CREATE TRIGGER IF NOT EXISTS trg_actualizar_cestas_INSERT
+            AFTER INSERT ON Etiquetas
+            BEGIN
+                INSERT INTO ConteoCestas (idProducto, idCamara, cantidadCestas)
+                VALUES (
+                    NEW.claveProducto,
+                    NEW.idCamara,
+                    COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1)
+                )
+                ON CONFLICT(idProducto, idCamara) DO UPDATE SET 
+                    cantidadCestas = cantidadCestas + COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1);
+            END;
+            """.trimIndent()
+        )
+
+        connection.execSQL(
+            """
+            CREATE TRIGGER IF NOT EXISTS trg_actualizar_cestas_UPDATE
+            AFTER UPDATE ON Etiquetas
+            BEGIN
+                UPDATE ConteoCestas 
+                SET cantidadCestas = cantidadCestas - COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 1)
+                WHERE idProducto = OLD.claveProducto AND idCamara = OLD.idCamara;
+                INSERT INTO ConteoCestas (idProducto, idCamara, cantidadCestas)
+                VALUES (
+                    NEW.claveProducto,
+                    NEW.idCamara,
+                    COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1)
+                )
+                ON CONFLICT(idProducto, idCamara) DO UPDATE SET
+                    cantidadCestas = cantidadCestas + COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1);
+            END;
+            """.trimIndent()
+        )
+
+        connection.execSQL(
+            """
+            CREATE TRIGGER IF NOT EXISTS trg_actualizar_cestas_DELETE
+            AFTER DELETE ON Etiquetas
+            BEGIN
+                UPDATE ConteoCestas 
+                SET cantidadCestas = cantidadCestas - COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 1)
+                WHERE idProducto = OLD.claveProducto AND idCamara = OLD.idCamara;
+            END;
+            """.trimIndent()
+        )
+
+
     }
 
     private fun cargarCatalogoDesdeAssets() {
@@ -232,9 +295,7 @@ class DataBase private constructor(private val context: Context) {
             for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
                 zonas.upsertZona(
-                    obj.getInt("numZona"),
-                    obj.getString("nombreZona"),
-                    obj.getString("descripcion")
+                    obj.getInt("numZona"), obj.getString("nombreZona"), obj.getString("descripcion")
                 )
                 cargados++
             }
@@ -269,6 +330,11 @@ class DataBase private constructor(private val context: Context) {
     }
 
     private fun cargarMovimientos() {
+        connection.prepare("SELECT name, sql FROM sqlite_master WHERE type='trigger'").use { stmt ->
+            while (stmt.step()) {
+                Log.d("TRIGGER_CHECK", "${stmt.getText(0)}:\n${stmt.getText(1)}")
+            }
+        }
         try {
             val jsonTexto = context.assets.open("catalogo_movimientos.json").bufferedReader()
                 .use { it.readText() }

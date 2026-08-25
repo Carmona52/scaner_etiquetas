@@ -19,6 +19,19 @@ class Productos(private val connection: SQLiteConnection) {
         return resultado
     }
 
+    fun getProductosPaginados(limit: Int, offset: Int): List<productosGuardados> {
+        val resultado = mutableListOf<productosGuardados>()
+        connection.prepare("SELECT claveProducto, descripcion FROM Articulos ORDER BY claveProducto ASC LIMIT ? OFFSET ?")
+            .use { stmt ->
+                stmt.bindLong(1, limit.toLong())
+                stmt.bindLong(2, offset.toLong())
+                while (stmt.step()) {
+                    resultado.add(mapearFila(stmt))
+                }
+            }
+        return resultado
+    }
+
     fun upsertProducto(claveProducto: String, descripcion: String) {
         connection.prepare(
             "INSERT INTO Articulos (claveProducto, descripcion) VALUES (?, ?) " + "ON CONFLICT(claveProducto) DO UPDATE SET descripcion = excluded.descripcion"

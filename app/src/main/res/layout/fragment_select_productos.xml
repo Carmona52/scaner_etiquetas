@@ -21,8 +21,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/addProduct"
             android:layout_marginHorizontal="10dp"
+            android:layout_toStartOf="@id/addProduct"
             android:text="@string/catalogo_de_productos"
             android:textAlignment="center"
             android:textColor="@color/black"
@@ -42,13 +42,15 @@
 
     </RelativeLayout>
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:layout_weight="1"
         android:fillViewport="true">
+
 
         <TableLayout
             android:id="@+id/tableLayout"
@@ -57,24 +59,35 @@
             android:layout_marginTop="10dp"
             android:padding="10dp">
 
-            <TableRow>
+            <TableRow android:background="#EEEEEE">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textStyle="bold"
-                    android:text="Clave Producto" />
+                    android:padding="8dp"
+                    android:text="Clave Producto"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
-                    android:textStyle="bold"
-                    android:text="Descripcion" />
+                    android:padding="8dp"
+                    android:text="Descripcion"
+                    android:textStyle="bold" />
             </TableRow>
 
         </TableLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
+
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/arrowDrop"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/arrow" />
 
 </LinearLayout>

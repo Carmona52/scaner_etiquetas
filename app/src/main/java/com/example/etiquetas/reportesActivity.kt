@@ -15,6 +15,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.etiquetas.database.DataBase
+import com.example.etiquetas.database.MovimientoGuardado
 import com.example.etiquetas.database.methods.EtiquetaGuardada
 import com.example.etiquetas.databinding.FragmentReportesBinding
 import java.time.LocalDateTime
@@ -30,11 +31,18 @@ class ReportesActivity : Fragment() {
     private var camaraSeleccionadaId: Int? = null
     private var turnoSeleccionado: String? = null
     private var movimientoSeleccionado: String? = null
+    private var factorSeleccionado: Int? = null
     private var fechaInicioISO: String? = null
     private var fechaFinISO: String? = null
 
+    private var listaMovimientos: List<MovimientoGuardado> = emptyList()
+
     private val turnos = arrayOf("Turno 1", "Turno 2", "Turno 3")
-    private val movimientos = arrayOf("Entrada", "Salida", "Inventario", "Ambos")
+
+    private val OPCION_VER_TODOS = "Todo"
+    private val OPCION_ENTRADAS = "Entradas"
+    private val OPCION_SALIDAS = "Salidas"
+    private val OPCION_INVENTARIO = "Inventario"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -85,9 +93,9 @@ class ReportesActivity : Fragment() {
     }
 
     private fun configurarSelectores() {
+        listaMovimientos = db.movimientos.getAllMovimientos()
         val listaCamaras = db.camaras.getAllCamaras()
         val listaTurnos = turnos.toList()
-        val listaMovimientos = movimientos.toList()
 
         val adapterCamara = ArrayAdapter(
             requireContext(),
@@ -106,8 +114,12 @@ class ReportesActivity : Fragment() {
                 override fun onNothingSelected(parent: AdapterView<*>) {}
             }
 
-        val adapterMovimiento =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listaMovimientos)
+        val listaParaSpinner = mutableListOf(OPCION_VER_TODOS, OPCION_ENTRADAS, OPCION_SALIDAS, OPCION_INVENTARIO)
+//      listaParaSpinner.addAll(listaMovimientos.map { it.tipoMovimiento })
+
+        val adapterMovimiento = ArrayAdapter(
+            requireContext(), android.R.layout.simple_spinner_item, listaParaSpinner
+        )
         adapterMovimiento.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.selectorMovimiento.adapter = adapterMovimiento
         binding.selectorMovimiento.onItemSelectedListener =
@@ -115,7 +127,28 @@ class ReportesActivity : Fragment() {
                 override fun onItemSelected(
                     parent: AdapterView<*>, view: View?, position: Int, id: Long
                 ) {
-                    movimientoSeleccionado = if (position == 3) null else listaMovimientos[position]
+                    val seleccion = listaParaSpinner[position]
+                    when (seleccion) {
+                        OPCION_VER_TODOS -> {
+                            movimientoSeleccionado = null
+                            factorSeleccionado = null
+                        }
+
+                        OPCION_ENTRADAS -> {
+                            movimientoSeleccionado = null
+                            factorSeleccionado = 1
+                        }
+
+                        OPCION_SALIDAS -> {
+                            movimientoSeleccionado = null
+                            factorSeleccionado = -1
+                        }
+
+                        OPCION_INVENTARIO -> {
+                            movimientoSeleccionado = null
+                            factorSeleccionado = 0
+                        }
+                    }
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>) {}
@@ -147,10 +180,10 @@ class ReportesActivity : Fragment() {
         }
 
         AlertDialog.Builder(requireContext()).setTitle("Confirmar corte de inventario").setMessage(
-                "Esto generará el reporte general del día y eliminará de la app los " + "movimientos con ciclo completo (Entrada + Salida).\n\n" + "Las etiquetas que sigan dentro de una cámara se conservarán como " + "inventario inicial para mañana.\n\n" + "Esta acción no se puede deshacer. ¿Deseas continuar?"
-            ).setPositiveButton("Sí, generar corte") { _, _ ->
-                ejecutarReporteYCorte(datos)
-            }.setNegativeButton("Cancelar", null).setCancelable(true).show()
+            "Esto generará el reporte general del día y eliminará de la app los " + "movimientos con ciclo completo (Entrada + Salida).\n\n" + "Las etiquetas que sigan dentro de una cámara se conservarán como " + "inventario inicial para mañana.\n\n" + "Esta acción no se puede deshacer. ¿Deseas continuar?"
+        ).setPositiveButton("Sí, generar corte") { _, _ ->
+            ejecutarReporteYCorte(datos)
+        }.setNegativeButton("Cancelar", null).setCancelable(true).show()
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -179,6 +212,7 @@ class ReportesActivity : Fragment() {
             idCamara = camaraSeleccionadaId,
             turno = turnoSeleccionado,
             movimiento = movimientoSeleccionado,
+            factor = factorSeleccionado,
             fechaInicioISO = fechaInicioISO,
             fechaFinISO = fechaFinISO
         )

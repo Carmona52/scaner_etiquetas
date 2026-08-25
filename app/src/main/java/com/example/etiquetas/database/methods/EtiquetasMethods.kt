@@ -4,7 +4,6 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.sqlite.SQLiteConnection
-import androidx.sqlite.SQLiteStatement
 import androidx.sqlite.execSQL
 import com.example.etiquetas.utils.Etiqueta
 import java.time.LocalDateTime
@@ -26,7 +25,8 @@ data class EtiquetaGuardada(
     val tipoMovimiento: String,
     val escaneadoPor: String,
     val notas: String,
-    val numEmpaque: String? = null
+    val numEmpaque: String? = null,
+    val idMovimiento: Int? = null
 )
 
 data class updateEtiqueta(
@@ -38,14 +38,23 @@ data class updateEtiqueta(
     val tipoMovimiento: String
 )
 
+data class StatusEtiqueta(val idCamara: Int?, val factor: Int)
+
 class Etiqueta(private val connection: SQLiteConnection) {
 
     fun getOneEtiqueta(id: String): updateEtiqueta? {
         var etiqueta: updateEtiqueta? = null
 
-        connection.prepare("SELECT etiquetaEscaneada, claveProducto, piezas, kilos, lote, tipoMovimiento FROM Etiquetas WHERE id = ?")
+        connection.prepare(
+            """
+            SELECT e.etiquetaEscaneada, e.claveProducto, e.piezas, e.kilos, e.lote, m.tipoMovimiento 
+            FROM Etiquetas e
+            LEFT JOIN Movimiento m ON e.idMovimiento = m.id
+            WHERE e.id = ?
+            """.trimIndent()
+        )
             .use { stmt ->
-                stmt.bindText(1, id)
+                stmt.bindInt(1, id.toInt())
 
                 if (stmt.step()) {
                     etiqueta = updateEtiqueta(
@@ -62,6 +71,26 @@ class Etiqueta(private val connection: SQLiteConnection) {
         return etiqueta
     }
 
+    fun getStatusActual(etiqueta: String): StatusEtiqueta {
+        var status = StatusEtiqueta(null, 0)
+        connection.prepare(
+            """
+            SELECT e.idCamara, m.factor
+            FROM Etiquetas e
+            JOIN Movimiento m ON e.idMovimiento = m.id
+            WHERE e.etiquetaEscaneada = ? AND m.factor != 0
+            ORDER BY e.id DESC
+            LIMIT 1
+            """.trimIndent()
+        ).use { stmt ->
+            stmt.bindText(1, etiqueta)
+            if (stmt.step()) {
+                status = StatusEtiqueta(stmt.getInt(0), stmt.getInt(1))
+            }
+        }
+        return status
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun insertarEtiqueta(
         e: Etiqueta,
@@ -72,15 +101,15 @@ class Etiqueta(private val connection: SQLiteConnection) {
         turno: String,
         escaneadoPor: String,
         etiquetaEscaneada: String,
-        tipoMovimiento: String,
-        notas: String? = null
+        notas: String? = null,
+        idMovimiento: Int? = null
     ): Boolean {
         val notasActual = notas ?: e.notas
         return try {
             connection.prepare(
                 """
                 INSERT INTO Etiquetas
-                (etiquetaEscaneada, claveProducto, piezas, kilos, lote, numEmpaque, fecha, hora, fechaEscaneo, idZona, idCamara, turno, tipoMovimiento, escaneadoPor, notas)
+                (etiquetaEscaneada, claveProducto, piezas, kilos, lote, numEmpaque, fecha, hora, fechaEscaneo, idZona, idCamara, idMovimiento, turno, escaneadoPor, notas)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """.trimIndent()
             ).use { stmt ->
@@ -95,8 +124,8 @@ class Etiqueta(private val connection: SQLiteConnection) {
                 stmt.bindText(9, (e.fechaEscaneo ?: LocalDateTime.now()).toString())
                 stmt.bindInt(10, idZona)
                 stmt.bindInt(11, idCamara)
-                stmt.bindText(12, turno)
-                stmt.bindText(13, tipoMovimiento)
+                stmt.bindInt(12, idMovimiento ?: 0)
+                stmt.bindText(13, turno)
                 stmt.bindText(14, escaneadoPor)
                 stmt.bindText(15, notasActual)
                 stmt.step()
@@ -109,18 +138,38 @@ class Etiqueta(private val connection: SQLiteConnection) {
         }
     }
 
-    fun upsertEtiqueta(id: String, etiqueta: updateEtiqueta) {
+    fun upsertEtiqueta(id: String, etiqueta: updateEtiqueta): Boolean {
+        var movimientoId: Int? = null
+        var factorEncontrado: Int? = null
+
+        connection.prepare("SELECT id, factor FROM Movimiento WHERE tipoMovimiento = ?").use { stmt ->
+            stmt.bindText(1, etiqueta.tipoMovimiento)
+            if (stmt.step()) {
+                movimientoId = stmt.getInt(0)
+                factorEncontrado = stmt.getInt(1)
+            }
+        }
+
+        Log.d("UPSERT_DEBUG", "tipoMovimiento recibido='${etiqueta.tipoMovimiento}' -> idMovimiento=$movimientoId factor=$factorEncontrado")
+
+        if (movimientoId == null) {
+            Log.e("UPSERT_DEBUG", "NO HUBO MATCH para '${etiqueta.tipoMovimiento}' — idMovimiento quedará NULL")
+            return false
+        }
+
         connection.prepare(
-            "UPDATE Etiquetas SET etiquetaEscaneada = ?, claveProducto = ?, piezas = ?, kilos = ?, hora = ?, tipoMovimiento = ? WHERE id = $id"
+            "UPDATE Etiquetas SET etiquetaEscaneada = ?, claveProducto = ?, piezas = ?, kilos = ?, lote = ?, idMovimiento = ? WHERE id = ?"
         ).use { stmt ->
             stmt.bindText(1, etiqueta.etiquetaEscaneada)
             stmt.bindText(2, etiqueta.claveProducto)
             stmt.bindText(3, etiqueta.piezas)
             stmt.bindText(4, etiqueta.kilos)
             stmt.bindText(5, etiqueta.lote)
-            stmt.bindText(6, etiqueta.tipoMovimiento)
+            stmt.bindInt(6, movimientoId!!)
+            stmt.bindInt(7, id.toInt())
             stmt.step()
         }
+        return true
     }
 
     fun eliminarUltimaEtiqueta() {
@@ -134,37 +183,10 @@ class Etiqueta(private val connection: SQLiteConnection) {
         }
     }
 
-    private fun mapearFilas(stmt: SQLiteStatement): EtiquetaGuardada {
-        return EtiquetaGuardada(
-            id = stmt.getLong(0),
-            etiquetaEscaneada = stmt.getText(1),
-            claveProducto = stmt.getText(2),
-            descripcionArticulo = stmt.getText(3),
-            piezas = stmt.getText(4),
-            kilos = stmt.getText(5),
-            lote = stmt.getText(6),
-            fecha = stmt.getText(7),
-            hora = stmt.getText(8),
-            fechaEscaneo = stmt.getText(9),
-            zona = stmt.getText(10),
-            camara = stmt.getText(11),
-            turno = stmt.getText(12),
-            tipoMovimiento = stmt.getText(13),
-            escaneadoPor = stmt.getText(14),
-            notas = stmt.getText(15),
-            numEmpaque = stmt.getText(16)
-        )
+    fun elminarEtiquetaText(etiqueta: String) {
+        connection.prepare("DELETE FROM Etiquetas WHERE etiquetaEscaneada = ?").use { stmt ->
+            stmt.bindText(1, etiqueta)
+            stmt.step()
+        }
     }
-
-    private fun mapFilasUpdate(stmt: SQLiteStatement): updateEtiqueta {
-        return updateEtiqueta(
-            etiquetaEscaneada = stmt.getText(0),
-            claveProducto = stmt.getText(1),
-            piezas = stmt.getText(2),
-            kilos = stmt.getText(3),
-            lote = stmt.getText(4),
-            tipoMovimiento = stmt.getText(5)
-        )
-    }
-
 }

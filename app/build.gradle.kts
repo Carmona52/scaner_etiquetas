@@ -16,6 +16,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.etiquetas"
+        applicationId = "com.example.etiquetas"
         minSdk = 24
         targetSdk = 37
         versionCode = 1
@@ -40,6 +41,7 @@ android {
         viewBinding = true
     }
 
+
 }
 
 room {
@@ -47,6 +49,7 @@ room {
 }
 
 dependencies {
+    implementation("com.airbnb.android:lottie:6.3.0")
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.sqlite.bundled)
