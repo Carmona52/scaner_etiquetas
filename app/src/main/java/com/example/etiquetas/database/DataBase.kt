@@ -15,14 +15,15 @@ import org.json.JSONArray
 
 class DataBase private constructor(private val context: Context) {
 
+    private val driver = BundledSQLiteDriver()
+    private val connection: SQLiteConnection
+
     val movimientos: Movimientos
     val productos: Productos
     val camaras: Camaras
     val zonas: Zonas
     val etiquetas: Etiqueta
     val reportes: Reportes
-    private val driver = BundledSQLiteDriver()
-    private val connection: SQLiteConnection
 
     init {
         val dbFile = context.getDatabasePath("etiquetas.db")
@@ -36,21 +37,29 @@ class DataBase private constructor(private val context: Context) {
         etiquetas = Etiqueta(connection)
         reportes = Reportes(connection)
 
-        crearTablas()
-        cargarCatalogoDesdeAssets()
-        cargarZonas()
-        cargarCamaras()
-        cargarMovimientos()
+        inicializarBaseDeDatos()
     }
 
     companion object {
         @Volatile
         private var instance: DataBase? = null
+
         fun getInstance(context: Context): DataBase {
             return instance ?: synchronized(this) {
                 instance ?: DataBase(context.applicationContext).also { instance = it }
             }
         }
+    }
+
+    private fun inicializarBaseDeDatos() {
+        crearTablas()
+        crearIndices()
+        crearTriggers()
+
+        cargarCatalogoDesdeAssets()
+        cargarZonas()
+        cargarCamaras()
+        cargarMovimientos()
     }
 
     private fun crearTablas() {
@@ -89,43 +98,44 @@ class DataBase private constructor(private val context: Context) {
 
         connection.execSQL(
             """
-                CREATE TABLE IF NOT EXISTS Tarimas (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    idCamara INTEGER NOT NULL,
-                    idEtiqueta INTEGER NOT NULL,
-                    FOREIGN KEY (idCamara) REFERENCES Camaras(id)
-                )
+            CREATE TABLE IF NOT EXISTS Tarimas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                idCamara INTEGER NOT NULL,
+                idEtiqueta INTEGER NOT NULL,
+                FOREIGN KEY (idCamara) REFERENCES Camaras(id)
+            )
             """.trimIndent()
         )
 
         connection.execSQL(
             """
-                CREATE TABLE IF NOT EXISTS Movimiento (
+            CREATE TABLE IF NOT EXISTS Movimiento (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tipoMovimiento TEXT NOT NULL UNIQUE,
-                factor INTEGER NOT NULL DEFAULT 1
-                )
+                factor INTEGER NOT NULL DEFAULT 0
+            )
             """.trimIndent()
         )
 
         connection.execSQL(
             """
-                CREATE TABLE IF NOT EXISTS InventarioCamaras (
-                    idCamara INTEGER PRIMARY KEY,
-                    totalKilos REAL NOT NULL DEFAULT 0.0,
-                    FOREIGN KEY (idCamara) REFERENCES Camaras(id)
-                )
+            CREATE TABLE IF NOT EXISTS InventarioCamaras (
+                idCamara INTEGER PRIMARY KEY,
+                totalKilos INTEGER NOT NULL DEFAULT 0,
+                FOREIGN KEY (idCamara) REFERENCES Camaras(id)
+            )
             """.trimIndent()
         )
 
         connection.execSQL(
             """
-            CREATE TABLE IF NOT EXISTS ConteoCestas(
+            CREATE TABLE IF NOT EXISTS ConteoCestas (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 idProducto TEXT NOT NULL,
                 idCamara INTEGER NOT NULL,
                 cantidadCestas INTEGER NOT NULL DEFAULT 0,
-                UNIQUE(idProducto, idCamara), -- AGREGADO PARA QUE FUNCIONE EL "ON CONFLICT"
+                totalKilos INTEGER NOT NULL DEFAULT 0,
+                UNIQUE(idProducto, idCamara),
                 FOREIGN KEY (idProducto) REFERENCES Articulos(claveProducto),
                 FOREIGN KEY (idCamara) REFERENCES Camaras(id)
             )
@@ -160,74 +170,97 @@ class DataBase private constructor(private val context: Context) {
             )
             """.trimIndent()
         )
+    }
 
+    private fun crearIndices() {
         connection.execSQL("CREATE INDEX IF NOT EXISTS idx_etiqueta_camara ON Etiquetas(etiquetaEscaneada, idCamara, idZona, idMovimiento)")
         connection.execSQL("CREATE INDEX IF NOT EXISTS idx_camara ON Camaras(numCamara)")
         connection.execSQL("CREATE INDEX IF NOT EXISTS idx_zona ON Zonas(numZona)")
         connection.execSQL("CREATE INDEX IF NOT EXISTS idx_tarimas ON Tarimas(idCamara, idEtiqueta)")
+        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_camara_conteo ON ConteoCestas(idCamara)")
+    }
 
+    private fun crearTriggers() {
         connection.execSQL(
             """
-        CREATE TRIGGER IF NOT EXISTS trg_actualizar_kilos_camara_INSERT
-        AFTER INSERT ON Etiquetas
-        BEGIN
-            INSERT INTO InventarioCamaras (idCamara, totalKilos)
-            VALUES (
-                NEW.idCamara, 
-                (CAST(NEW.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1))
-            )
-            ON CONFLICT(idCamara) DO UPDATE SET
-                totalKilos = totalKilos + (CAST(NEW.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1));
-        END;
-        """.trimIndent()
+            CREATE TRIGGER IF NOT EXISTS trg_actualizar_kilos_camara_INSERT
+            AFTER INSERT ON Etiquetas
+            BEGIN
+                INSERT INTO InventarioCamaras (idCamara, totalKilos)
+                VALUES (
+                    NEW.idCamara,
+                    CAST(ROUND(CAST(NEW.kilos AS REAL) * 100) AS INTEGER) *
+                    COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0)
+                )
+                ON CONFLICT(idCamara) DO UPDATE SET
+                    totalKilos = totalKilos + (
+                        CAST(ROUND(CAST(NEW.kilos AS REAL) * 100) AS INTEGER) *
+                        COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0)
+                    );
+            END;
+            """.trimIndent()
         )
 
         connection.execSQL(
             """
-        CREATE TRIGGER IF NOT EXISTS trg_actualizar_kilos_camara_UPDATE
-        AFTER UPDATE ON Etiquetas
-        BEGIN
-        
-            UPDATE InventarioCamaras 
-            SET totalKilos = totalKilos - (CAST(OLD.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 1))
-            WHERE idCamara = OLD.idCamara;
+            CREATE TRIGGER IF NOT EXISTS trg_actualizar_kilos_camara_UPDATE
+            AFTER UPDATE ON Etiquetas
+            BEGIN
+                UPDATE InventarioCamaras
+                SET totalKilos = totalKilos - (
+                    CAST(ROUND(CAST(OLD.kilos AS REAL) * 100) AS INTEGER) *
+                    COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 0)
+                )
+                WHERE idCamara = OLD.idCamara;
 
-            INSERT INTO InventarioCamaras (idCamara, totalKilos)
-            VALUES (
-                NEW.idCamara, 
-                (CAST(NEW.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1))
-            )
-            ON CONFLICT(idCamara) DO UPDATE SET
-                totalKilos = totalKilos + (CAST(NEW.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1));
-        END;
-        """.trimIndent()
+                INSERT INTO InventarioCamaras (idCamara, totalKilos)
+                VALUES (
+                    NEW.idCamara,
+                    CAST(ROUND(CAST(NEW.kilos AS REAL) * 100) AS INTEGER) *
+                    COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0)
+                )
+                ON CONFLICT(idCamara) DO UPDATE SET
+                    totalKilos = totalKilos + (
+                        CAST(ROUND(CAST(NEW.kilos AS REAL) * 100) AS INTEGER) *
+                        COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0)
+                    );
+            END;
+            """.trimIndent()
         )
 
         connection.execSQL(
             """
-        CREATE TRIGGER IF NOT EXISTS trg_actualizar_kilos_camara_DELETE
-        AFTER DELETE ON Etiquetas
-        BEGIN
-            UPDATE InventarioCamaras 
-            SET totalKilos = totalKilos - (CAST(OLD.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 1))
-            WHERE idCamara = OLD.idCamara;
-        END;
-        """.trimIndent()
+            CREATE TRIGGER IF NOT EXISTS trg_actualizar_kilos_camara_DELETE
+            AFTER DELETE ON Etiquetas
+            BEGIN
+                UPDATE InventarioCamaras
+                SET totalKilos = totalKilos - (
+                    CAST(ROUND(CAST(OLD.kilos AS REAL) * 100) AS INTEGER) *
+                    COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 0)
+                )
+                WHERE idCamara = OLD.idCamara;
+            END;
+            """.trimIndent()
         )
-
         connection.execSQL(
             """
             CREATE TRIGGER IF NOT EXISTS trg_actualizar_cestas_INSERT
             AFTER INSERT ON Etiquetas
             BEGIN
-                INSERT INTO ConteoCestas (idProducto, idCamara, cantidadCestas)
+                INSERT INTO ConteoCestas (idProducto, idCamara, cantidadCestas, totalKilos)
                 VALUES (
                     NEW.claveProducto,
                     NEW.idCamara,
-                    COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1)
+                    COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0),
+                    CAST(ROUND(CAST(NEW.kilos AS REAL) * 100) AS INTEGER) *
+                    COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0)
                 )
-                ON CONFLICT(idProducto, idCamara) DO UPDATE SET 
-                    cantidadCestas = cantidadCestas + COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1);
+                ON CONFLICT(idProducto, idCamara) DO UPDATE SET
+                    cantidadCestas = cantidadCestas + COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0),
+                    totalKilos = totalKilos + (
+                        CAST(ROUND(CAST(NEW.kilos AS REAL) * 100) AS INTEGER) *
+                        COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0)
+                    );
             END;
             """.trimIndent()
         )
@@ -237,17 +270,25 @@ class DataBase private constructor(private val context: Context) {
             CREATE TRIGGER IF NOT EXISTS trg_actualizar_cestas_UPDATE
             AFTER UPDATE ON Etiquetas
             BEGIN
-                UPDATE ConteoCestas 
-                SET cantidadCestas = cantidadCestas - COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 1)
+                UPDATE ConteoCestas
+                SET cantidadCestas = cantidadCestas - COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 0),
+                    totalKilos = totalKilos - (CAST(OLD.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 0))
                 WHERE idProducto = OLD.claveProducto AND idCamara = OLD.idCamara;
-                INSERT INTO ConteoCestas (idProducto, idCamara, cantidadCestas)
+
+                INSERT INTO ConteoCestas (idProducto, idCamara, cantidadCestas, totalKilos)
                 VALUES (
                     NEW.claveProducto,
                     NEW.idCamara,
-                    COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1)
+                    COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0),
+                    CAST(ROUND(CAST(NEW.kilos AS REAL) * 100) AS INTEGER) *
+                    COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0)
                 )
                 ON CONFLICT(idProducto, idCamara) DO UPDATE SET
-                    cantidadCestas = cantidadCestas + COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 1);
+                    cantidadCestas = cantidadCestas + COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0),
+                    totalKilos = totalKilos + (
+                        CAST(ROUND(CAST(NEW.kilos AS REAL) * 100) AS INTEGER) *
+                        COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0)
+                    );
             END;
             """.trimIndent()
         )
@@ -257,60 +298,43 @@ class DataBase private constructor(private val context: Context) {
             CREATE TRIGGER IF NOT EXISTS trg_actualizar_cestas_DELETE
             AFTER DELETE ON Etiquetas
             BEGIN
-                UPDATE ConteoCestas 
-                SET cantidadCestas = cantidadCestas - COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 1)
+                UPDATE ConteoCestas
+                SET 
+                 cantidadCestas = cantidadCestas - COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 0),
+                totalKilos = totalKilos - (
+                        CAST(ROUND(CAST(OLD.kilos AS REAL) * 100) AS INTEGER) *
+                        COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 0)
+                    )
                 WHERE idProducto = OLD.claveProducto AND idCamara = OLD.idCamara;
             END;
             """.trimIndent()
         )
-
-
     }
 
     private fun cargarCatalogoDesdeAssets() {
-        try {
-            val jsonTexto = context.assets.open("catalogo_productos.json").bufferedReader()
-                .use { it.readText() }
-            val jsonArray = JSONArray(jsonTexto)
-            var cargados = 0
+        leerJsonFromAssets("catalogo_productos.json") { jsonArray ->
             for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
                 val cod = obj.getInt("COD")
                 val descripcion = obj.getString("DESCRIPCION")
                 productos.upsertProducto(cod.toString().padStart(3, '0'), descripcion)
-                cargados++
             }
-            Log.d("DataBase", "Catálogo cargado: $cargados artículos")
-        } catch (e: Exception) {
-            Log.e("DataBase", "Error al cargar catálogo desde assets", e)
         }
     }
 
     private fun cargarZonas() {
-        try {
-            val jsonTexto =
-                context.assets.open("catalogo_zonas.json").bufferedReader().use { it.readText() }
-            val jsonArray = JSONArray(jsonTexto)
-            var cargados = 0
+        leerJsonFromAssets("catalogo_zonas.json") { jsonArray ->
             for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
                 zonas.upsertZona(
                     obj.getInt("numZona"), obj.getString("nombreZona"), obj.getString("descripcion")
                 )
-                cargados++
             }
-            Log.d("DataBase", "Catálogo cargado: $cargados zonas")
-        } catch (e: Exception) {
-            Log.e("DataBase", "Error al cargar zonas desde assets", e)
         }
     }
 
     private fun cargarCamaras() {
-        try {
-            val jsonTexto =
-                context.assets.open("catalogo_camaras.json").bufferedReader().use { it.readText() }
-            val jsonArray = JSONArray(jsonTexto)
-            var cargados = 0
+        leerJsonFromAssets("catalogo_camaras.json") { jsonArray ->
             for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
                 camaras.upsertCamara(
@@ -321,35 +345,27 @@ class DataBase private constructor(private val context: Context) {
                         descripcion = obj.getString("descripcion")
                     )
                 )
-                cargados++
             }
-            Log.d("DataBase", "Catálogo cargado: $cargados camaras")
-        } catch (e: Exception) {
-            Log.e("DataBase", "Error al cargar camaras desde assets", e)
         }
     }
 
     private fun cargarMovimientos() {
-        connection.prepare("SELECT name, sql FROM sqlite_master WHERE type='trigger'").use { stmt ->
-            while (stmt.step()) {
-                Log.d("TRIGGER_CHECK", "${stmt.getText(0)}:\n${stmt.getText(1)}")
-            }
-        }
-        try {
-            val jsonTexto = context.assets.open("catalogo_movimientos.json").bufferedReader()
-                .use { it.readText() }
-            val jsonArray = JSONArray(jsonTexto)
-            var cargados = 0
+        leerJsonFromAssets("catalogo_movimientos.json") { jsonArray ->
             for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
                 movimientos.upsertMovimiento(obj.getString("tipoMovimiento"), obj.getInt("factor"))
-                cargados++
             }
-            Log.d("DataBase", "Catálogo cargado: $cargados movimientos")
-
-        } catch (e: Exception) {
-            Log.e("DataBase", "Error al cargar movimientos desde assets", e)
         }
+    }
 
+    private inline fun leerJsonFromAssets(filename: String, block: (JSONArray) -> Unit) {
+        try {
+            val jsonTexto = context.assets.open(filename).bufferedReader().use { it.readText() }
+            val jsonArray = JSONArray(jsonTexto)
+            block(jsonArray)
+            Log.d("DataBase", "Catálogo cargado: ${jsonArray.length()} elementos desde $filename")
+        } catch (e: Exception) {
+            Log.e("DataBase", "Error al cargar $filename desde assets", e)
+        }
     }
 }

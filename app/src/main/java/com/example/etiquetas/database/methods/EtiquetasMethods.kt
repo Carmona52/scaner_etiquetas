@@ -150,8 +150,6 @@ class Etiqueta(private val connection: SQLiteConnection) {
             }
         }
 
-        Log.d("UPSERT_DEBUG", "tipoMovimiento recibido='${etiqueta.tipoMovimiento}' -> idMovimiento=$movimientoId factor=$factorEncontrado")
-
         if (movimientoId == null) {
             Log.e("UPSERT_DEBUG", "NO HUBO MATCH para '${etiqueta.tipoMovimiento}' — idMovimiento quedará NULL")
             return false

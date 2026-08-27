@@ -5,44 +5,46 @@ import androidx.sqlite.SQLiteStatement
 import androidx.sqlite.execSQL
 
 class Reportes(private val connection: SQLiteConnection) {
-    fun obtenerReporte(): List<EtiquetaGuardada> {
-        val resultado = mutableListOf<EtiquetaGuardada>()
-        connection.prepare(
-            """
-            SELECT e.id, e.etiquetaEscaneada, e.claveProducto, a.descripcion, e.piezas, e.kilos, e.lote,
-                   e.fecha, e.hora, e.fechaEscaneo, z.nombreZona, c.nombreCamara, e.turno, m.tipoMovimiento, e.idMovimiento, e.escaneadoPor, e.notas, e.numEmpaque
+
+    companion object {
+        private val BASE_SELECT_QUERY = """
+            SELECT
+                e.id,
+                e.etiquetaEscaneada,
+                e.claveProducto,
+                a.descripcion,
+                e.piezas,
+                e.kilos,
+                e.lote,
+                e.fecha,
+                e.hora,
+                e.fechaEscaneo,
+                z.nombreZona,
+                c.nombreCamara,
+                e.turno,
+                m.tipoMovimiento,
+                e.idMovimiento,
+                e.escaneadoPor,
+                e.notas,
+                e.numEmpaque
             FROM Etiquetas e
             LEFT JOIN Articulos a ON e.claveProducto = a.claveProducto
             LEFT JOIN Zonas z ON e.idZona = z.id
             LEFT JOIN Camaras c ON e.idCamara = c.id
             LEFT JOIN Movimiento m ON e.idMovimiento = m.id
-            ORDER BY e.id ASC
-            """.trimIndent()
-        ).use { stmt ->
+        """.trimIndent()
+    }
+    fun obtenerReporte(): List<EtiquetaGuardada> {
+        val query = "$BASE_SELECT_QUERY ORDER BY e.id ASC"
+        val resultado = mutableListOf<EtiquetaGuardada>()
+
+        connection.prepare(query).use { stmt ->
             while (stmt.step()) {
                 resultado.add(mapearFila(stmt))
             }
         }
-        return resultado
-    }
 
-    fun hacerCorteDeInventario() {
-        connection.execSQL(
-            """
-            DELETE FROM Etiquetas
-            WHERE id NOT IN (
-                SELECT e.id
-                FROM Etiquetas e
-                INNER JOIN (
-                    SELECT etiquetaEscaneada, idCamara, MAX(id) AS maxId
-                    FROM Etiquetas
-                    GROUP BY etiquetaEscaneada, idCamara
-                ) ultimo ON e.id = ultimo.maxId
-                JOIN Movimiento m ON e.idMovimiento = m.id
-                WHERE m.tipoMovimiento = 'Entrada'
-            )
-            """.trimIndent()
-        )
+        return resultado
     }
 
     fun obtenerReporteFiltrado(
@@ -55,56 +57,132 @@ class Reportes(private val connection: SQLiteConnection) {
         fechaFinISO: String? = null
     ): List<EtiquetaGuardada> {
         val condiciones = mutableListOf<String>()
-        val valores = mutableListOf<String>()
+        val parametros = mutableListOf<Any>()
 
-        if (idZona != null) condiciones.add("e.idZona = $idZona")
-        if (idCamara != null) condiciones.add("e.idCamara = $idCamara")
-        if (turno != null) {
-            condiciones.add("e.turno = ?"); valores.add(turno)
+        idZona?.let {
+            condiciones.add("e.idZona = ?")
+            parametros.add(it)
         }
-        if (movimiento != null) {
-            condiciones.add("m.tipoMovimiento = ?"); valores.add(movimiento)
+        idCamara?.let {
+            condiciones.add("e.idCamara = ?")
+            parametros.add(it)
         }
-        if (factor != null) {
-            condiciones.add("m.factor = ?"); valores.add(factor.toString())
+        turno?.let {
+            condiciones.add("e.turno = ?")
+            parametros.add(it)
+        }
+        movimiento?.let {
+            condiciones.add("m.tipoMovimiento = ?")
+            parametros.add(it)
+        }
+        factor?.let {
+            condiciones.add("m.factor = ?")
+            parametros.add(it)
+        }
+        when {
+            fechaInicioISO != null && fechaFinISO != null -> {
+                condiciones.add("e.fechaEscaneo >= ? AND e.fechaEscaneo <= ?")
+                parametros.add("${fechaInicioISO}T00:00:00")
+                parametros.add("${fechaFinISO}T23:59:59")
+            }
+            fechaInicioISO != null -> {
+                condiciones.add("e.fechaEscaneo >= ?")
+                parametros.add("${fechaInicioISO}T00:00:00")
+            }
+            fechaFinISO != null -> {
+                condiciones.add("e.fechaEscaneo <= ?")
+                parametros.add("${fechaFinISO}T23:59:59")
+            }
         }
 
-        if (fechaInicioISO != null && fechaFinISO != null) {
-            condiciones.add("e.fechaEscaneo >= ? AND e.fechaEscaneo <= ?")
-            valores.add("${fechaInicioISO}T00:00:00")
-            valores.add("${fechaFinISO}T23:59:59")
-        } else if (fechaInicioISO != null) {
-            condiciones.add("e.fechaEscaneo >= ?")
-            valores.add("${fechaInicioISO}T00:00:00")
-        } else if (fechaFinISO != null) {
-            condiciones.add("e.fechaEscaneo <= ?")
-            valores.add("${fechaFinISO}T23:59:59")
+        val whereClause = if (condiciones.isNotEmpty()) {
+            "WHERE ${condiciones.joinToString(" AND ")}"
+        } else {
+            ""
         }
 
-        val whereClause = if (condiciones.isNotEmpty()) "WHERE " + condiciones.joinToString(" AND ") else ""
-
+        val query = "$BASE_SELECT_QUERY $whereClause ORDER BY e.id DESC"
         val resultado = mutableListOf<EtiquetaGuardada>()
-        connection.prepare(
-            """
-            SELECT e.id, e.etiquetaEscaneada, e.claveProducto, a.descripcion, e.piezas, e.kilos, e.lote,
-                   e.fecha, e.hora, e.fechaEscaneo, z.nombreZona, c.nombreCamara, e.turno, m.tipoMovimiento, e.idMovimiento, e.escaneadoPor, e.notas, e.numEmpaque
-            FROM Etiquetas e
-            LEFT JOIN Articulos a ON e.claveProducto = a.claveProducto
-            LEFT JOIN Zonas z ON e.idZona = z.id
-            LEFT JOIN Camaras c ON e.idCamara = c.id
-            LEFT JOIN Movimiento m ON e.idMovimiento = m.id
-            $whereClause
-            ORDER BY e.id DESC
-            """.trimIndent()
-        ).use { stmt ->
-            valores.forEachIndexed { index, valor -> stmt.bindText(index + 1, valor) }
+
+        connection.prepare(query).use { stmt ->
+            parametros.forEachIndexed { index, valor ->
+                when (valor) {
+                    is Int -> stmt.bindInt(index + 1, valor)
+                    is String -> stmt.bindText(index + 1, valor)
+                }
+            }
+
             while (stmt.step()) {
                 resultado.add(mapearFila(stmt))
             }
         }
+
         return resultado
     }
+    fun hacerCorteDeInventario() {
+        connection.execSQL("BEGIN TRANSACTION")
+        try {
+            connection.execSQL(
+                """
+                DELETE FROM Etiquetas
+                WHERE id NOT IN (
+                    SELECT e.id
+                    FROM Etiquetas e
+                    INNER JOIN (
+                        SELECT e2.etiquetaEscaneada, MAX(e2.id) AS maxId
+                        FROM Etiquetas e2
+                        INNER JOIN Movimiento m2 ON e2.idMovimiento = m2.id
+                        WHERE m2.factor != 0
+                        GROUP BY e2.etiquetaEscaneada
+                    ) ultimo ON e.id = ultimo.maxId
+                    INNER JOIN Movimiento m ON e.idMovimiento = m.id
+                    WHERE m.factor = 1
+                )
+                """.trimIndent()
+            )
 
+            reconstruirInventario()
+            connection.execSQL("COMMIT")
+        } catch (e: Exception) {
+            connection.execSQL("ROLLBACK")
+            throw e
+        }
+    }
+
+    private fun reconstruirInventario() {
+        connection.execSQL("DELETE FROM InventarioCamaras")
+        connection.execSQL(
+            """
+            INSERT INTO InventarioCamaras (idCamara, totalKilos)
+            SELECT
+                e.idCamara,
+                SUM(
+                    CAST(ROUND(CAST(e.kilos AS REAL) * 100) AS INTEGER) *
+                    COALESCE(m.factor, 0)
+                ) AS totalKilos
+            FROM Etiquetas e
+            LEFT JOIN Movimiento m ON e.idMovimiento = m.id
+            GROUP BY e.idCamara
+            """.trimIndent()
+        )
+        connection.execSQL("DELETE FROM ConteoCestas")
+        connection.execSQL(
+            """
+            INSERT INTO ConteoCestas (idProducto, idCamara, cantidadCestas, totalKilos)
+            SELECT
+                e.claveProducto,
+                e.idCamara,
+                SUM(COALESCE(m.factor, 0)) AS cantidadCestas,
+                SUM(
+                    CAST(ROUND(CAST(e.kilos AS REAL) * 100) AS INTEGER) *
+                    COALESCE(m.factor, 0)
+                ) AS totalKilos
+            FROM Etiquetas e
+            LEFT JOIN Movimiento m ON e.idMovimiento = m.id
+            GROUP BY e.claveProducto, e.idCamara
+            """.trimIndent()
+        )
+    }
     private fun mapearFila(stmt: SQLiteStatement): EtiquetaGuardada {
         return EtiquetaGuardada(
             id = stmt.getLong(0),

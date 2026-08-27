@@ -167,9 +167,21 @@ class EscanearEtiquetaFragment : Fragment() {
         }
 
         val status = db.etiquetas.getStatusActual(etiqueta)
-        val selectedMov = listaMovimientos.firstOrNull { it.tipoMovimiento == movimiento }
-        val factorSeleccionado = selectedMov?.factor ?: 0
-        val idMov = selectedMov?.id ?: 0
+        val selectedMov = listaMovimientos.firstOrNull {
+            it.tipoMovimiento == movimiento
+        }
+
+        if (selectedMov == null) {
+            soundHelper?.makeBadSound()
+
+            Toast.makeText(
+                requireContext(), "Movimiento no válido", Toast.LENGTH_SHORT
+            ).show()
+
+            return
+        }
+        val factorSeleccionado = selectedMov.factor
+        val idMov = selectedMov.id
 
         Log.d("Movimiento", "Factor seleccionado: $factorSeleccionado, Status actual: $status")
 
@@ -438,9 +450,8 @@ class EscanearEtiquetaFragment : Fragment() {
             habilitado = true
         )
 
-        val factorActual = listaMovimientos
-            .firstOrNull { it.tipoMovimiento == etiquetaUpdate?.tipoMovimiento }
-            ?.factor
+        val factorActual =
+            listaMovimientos.firstOrNull { it.tipoMovimiento == etiquetaUpdate?.tipoMovimiento }?.factor
 
         val movimientosPermitidos = if (factorActual != null) {
             listaMovimientos.filter { it.factor == factorActual }
@@ -491,7 +502,11 @@ class EscanearEtiquetaFragment : Fragment() {
                         Toast.makeText(context, "Éxito al actualizar", Toast.LENGTH_SHORT).show()
                     } else {
                         soundHelper?.makeBadSound()
-                        Toast.makeText(context, "Tipo de movimiento no reconocido, no se actualizó", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            context,
+                            "Tipo de movimiento no reconocido, no se actualizó",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 } catch (e: Exception) {
                     soundHelper?.makeBadSound()
