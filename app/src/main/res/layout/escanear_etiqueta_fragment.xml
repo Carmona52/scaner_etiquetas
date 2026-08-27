@@ -11,11 +11,12 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:orientation="horizontal">
+
         <Spinner
             android:id="@+id/spinnerCamara"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="3" />
+            android:layout_weight="1" />
 
     </LinearLayout>
 
@@ -36,105 +37,116 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1" />
+
     </LinearLayout>
 
-    <ScrollView
+    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:layout_weight="1"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:scrollbars="horizontal">
 
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fillViewport="true"
-            android:scrollbars="horizontal">
+        <LinearLayout
+            android:layout_width="@dimen/tabla_ancho_total"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <TableLayout
-                android:id="@+id/tableLayout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-                <TableRow android:background="#EEEEEE">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="8dp"
-                        android:text="@string/clvProducto"
-                        android:textAlignment="center"
-                        android:textStyle="bold" />
+                <TextView
+                    android:layout_width="@dimen/tabla_clave"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:text="@string/clvProducto"
+                    android:textAlignment="textStart"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="8dp"
-                        android:text="Descripcion"
-                        android:textStyle="bold" />
+                <TextView
+                    android:layout_width="@dimen/tabla_descripcion"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:text="Descripción"
+                    android:textAlignment="textStart"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="8dp"
-                        android:text="@string/piezas"
-                        android:textStyle="bold" />
+                <TextView
+                    android:layout_width="@dimen/tabla_piezas"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="textStart"
+                    android:padding="8dp"
+                    android:text="@string/piezas"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="8dp"
-                        android:text="@string/kilos"
-                        android:textStyle="bold" />
+                <TextView
+                    android:layout_width="@dimen/tabla_kilos"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="textStart"
+                    android:padding="8dp"
+                    android:text="@string/kilos"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="8dp"
-                        android:text="@string/lote"
-                        android:textStyle="bold" />
+                <TextView
+                    android:layout_width="@dimen/tabla_lote"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="textStart"
+                    android:padding="8dp"
+                    android:text="@string/lote"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="8dp"
-                        android:text="@string/fecha"
-                        android:textStyle="bold" />
+                <TextView
+                    android:layout_width="@dimen/tabla_fecha"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="textStart"
+                    android:padding="8dp"
+                    android:text="@string/fecha"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="8dp"
-                        android:text="@string/hora"
-                        android:textStyle="bold" />
+                <TextView
+                    android:layout_width="@dimen/tabla_hora"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="textStart"
+                    android:padding="8dp"
+                    android:text="@string/hora"
+                    android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:padding="8dp" />
-                </TableRow>
-            </TableLayout>
-        </HorizontalScrollView>
-    </ScrollView>
+                <TextView
+                    android:layout_width="@dimen/tabla_accion"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="textStart"
+                    android:padding="8dp"
+                    android:text="Editar"
+                    android:textStyle="bold" />
 
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerEtiquetas"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:overScrollMode="never"
+                android:scrollbars="vertical" />
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/ingresoManual"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="@color/green"
             android:focusable="false"
@@ -143,5 +155,7 @@
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
+
     </LinearLayout>
+
 </LinearLayout>

@@ -9,22 +9,22 @@ import com.example.etiquetas.utils.Etiqueta
 import java.time.LocalDateTime
 
 data class EtiquetaGuardada(
-    val id: Long,
-    val etiquetaEscaneada: String,
-    val claveProducto: String,
+    val id: Long?,
+    val etiquetaEscaneada: String?,
+    val claveProducto: String?,
     val descripcionArticulo: String?,
     val piezas: String?,
-    val kilos: String,
+    val kilos: String?,
     val lote: String?,
-    val fecha: String,
-    val hora: String,
-    val fechaEscaneo: String,
+    val fecha: String?,
+    val hora: String?,
+    val fechaEscaneo: String?,
     val zona: String?,
     val camara: String?,
-    val turno: String,
-    val tipoMovimiento: String,
-    val escaneadoPor: String,
-    val notas: String,
+    val turno: String?,
+    val tipoMovimiento: String?,
+    val escaneadoPor: String?,
+    val notas: String?,
     val numEmpaque: String? = null,
     val idMovimiento: Int? = null
 )
@@ -36,6 +36,23 @@ data class updateEtiqueta(
     val kilos: String,
     val lote: String,
     val tipoMovimiento: String
+)
+
+data class lastEtiqueta(
+    val id: Long?,
+    val etiquetaEscaneada: String?,
+    val claveProducto: String?,
+    val descripcionArticulo: String?,
+    val piezas: String?,
+    val kilos: String?,
+    val lote: String?,
+    val fecha: String?,
+    val hora: String?,
+    val fechaEscaneo: String?,
+    val zona: String?,
+    val camara: String?,
+    val turno: String?,
+    val tipoMovimiento: String?,
 )
 
 data class StatusEtiqueta(val idCamara: Int?, val factor: Int)
@@ -68,6 +85,59 @@ class Etiqueta(private val connection: SQLiteConnection) {
                 }
             }
 
+        return etiqueta
+    }
+
+    fun getLastEtiqueta(): EtiquetaGuardada? {
+        var etiqueta: EtiquetaGuardada? = null
+        connection.prepare(
+            """SELECT
+                e.id,
+                e.etiquetaEscaneada,
+                e.claveProducto,
+                a.descripcion,
+                e.piezas,
+                e.kilos,
+                e.lote,
+                e.fecha,
+                e.hora,
+                e.fechaEscaneo,
+                z.nombreZona,
+                c.nombreCamara,
+                e.turno,
+                m.tipoMovimiento,
+                e.idMovimiento
+            FROM Etiquetas e
+            LEFT JOIN Articulos a ON e.claveProducto = a.claveProducto
+            LEFT JOIN Zonas z ON e.idZona = z.id
+            LEFT JOIN Camaras c ON e.idCamara = c.id
+            LEFT JOIN Movimiento m ON e.idMovimiento = m.id
+           ORDER BY e.id DESC LIMIT 1""".trimIndent()
+        )
+            .use { stmt ->
+                if (stmt.step()) {
+                    etiqueta = EtiquetaGuardada(
+                        id = stmt.getLong(0),
+                        etiquetaEscaneada = stmt.getText(1),
+                        claveProducto = stmt.getText(2),
+                        descripcionArticulo = stmt.getText(3),
+                        piezas = stmt.getText(4),
+                        kilos = stmt.getText(5),
+                        lote = stmt.getText(6),
+                        fecha = stmt.getText(7),
+                        hora = stmt.getText(8),
+                        fechaEscaneo = stmt.getText(9),
+                        zona = stmt.getText(10),
+                        camara = stmt.getText(11),
+                        turno = stmt.getText(12),
+                        tipoMovimiento = stmt.getText(13),
+                        escaneadoPor = "",
+                        notas = "",
+                        numEmpaque = "",
+                        idMovimiento = stmt.getInt(14),
+                    )
+                }
+            }
         return etiqueta
     }
 
@@ -142,16 +212,20 @@ class Etiqueta(private val connection: SQLiteConnection) {
         var movimientoId: Int? = null
         var factorEncontrado: Int? = null
 
-        connection.prepare("SELECT id, factor FROM Movimiento WHERE tipoMovimiento = ?").use { stmt ->
-            stmt.bindText(1, etiqueta.tipoMovimiento)
-            if (stmt.step()) {
-                movimientoId = stmt.getInt(0)
-                factorEncontrado = stmt.getInt(1)
+        connection.prepare("SELECT id, factor FROM Movimiento WHERE tipoMovimiento = ?")
+            .use { stmt ->
+                stmt.bindText(1, etiqueta.tipoMovimiento)
+                if (stmt.step()) {
+                    movimientoId = stmt.getInt(0)
+                    factorEncontrado = stmt.getInt(1)
+                }
             }
-        }
 
         if (movimientoId == null) {
-            Log.e("UPSERT_DEBUG", "NO HUBO MATCH para '${etiqueta.tipoMovimiento}' — idMovimiento quedará NULL")
+            Log.e(
+                "UPSERT_DEBUG",
+                "NO HUBO MATCH para '${etiqueta.tipoMovimiento}' — idMovimiento quedará NULL"
+            )
             return false
         }
 
@@ -174,9 +248,9 @@ class Etiqueta(private val connection: SQLiteConnection) {
         connection.execSQL("DELETE FROM Etiquetas WHERE id = (SELECT MAX(id) FROM Etiquetas)")
     }
 
-    fun eliminarEtiqueta(id: Int) {
+    fun eliminarEtiqueta(id: Long) {
         connection.prepare("DELETE FROM Etiquetas WHERE id = ?").use { stmt ->
-            stmt.bindInt(1, id)
+            stmt.bindInt(1, id.toInt())
             stmt.step()
         }
     }

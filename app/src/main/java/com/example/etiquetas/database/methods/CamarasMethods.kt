@@ -158,7 +158,8 @@ class Camaras(private val connection: SQLiteConnection) {
             FROM ConteoCestas c
             LEFT JOIN Articulos a
                 ON c.idProducto = a.claveProducto
-            WHERE c.idCamara = ?
+            WHERE c.idCamara = ? 
+            ORDER BY c.cantidadCestas DESC
             """.trimIndent()
         ).use { stmt ->
             stmt.bindInt(1, idCamara ?: 0)
