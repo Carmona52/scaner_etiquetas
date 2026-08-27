@@ -11,24 +11,37 @@ class ScanerAccess(private val context: Context, private val onScanResult: (Stri
 
     private val scanReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val codigo = when (intent.action) {
-                ACTION_SUNMI -> intent.getStringExtra(EXTRA_SUNMI)
-                ACTION_ZEBRA -> intent.getStringExtra(EXTRA_ZEBRA)
-                ACTION_HONEYWELL -> intent.getStringExtra(EXTRA_HONEYWELL)
-                ACTION_HONEYWELL_AIDC -> {
-                    intent.getStringExtra(EXTRA_HONEYWELL_AIDC)
-                        ?: intent.getStringExtra("barcode_data")
+            try {
+                val codigo = when (intent.action) {
+                    ACTION_SUNMI -> intent.getStringExtra(EXTRA_SUNMI)
+                    ACTION_ZEBRA -> intent.getStringExtra(EXTRA_ZEBRA)
+                    ACTION_HONEYWELL -> intent.getStringExtra(EXTRA_HONEYWELL)
+                    ACTION_HONEYWELL_AIDC -> {
+                        val data = intent.getExtras()?.get(EXTRA_HONEYWELL_AIDC)
+                        when (data) {
+                            is String -> data
+                            is ByteArray -> String(data)
+                            else -> intent.getStringExtra("barcode_data")
+                        }
+                    }
+
+                    else -> null
                 }
 
-                else -> null
-            }
-
-            if (!codigo.isNullOrEmpty()) {
-                onScanResult(codigo)
-            } else {
+                if (!codigo.isNullOrEmpty()) {
+                    onScanResult(codigo)
+                } else {
+                    Toast.makeText(
+                        context,
+                        "El escáner envió la señal, pero el código está vacío.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ScanerAccess", "Error processing scan", e)
                 Toast.makeText(
                     context,
-                    "El escáner envió la señal, pero el código está vacío.",
+                    "Error al procesar el código: ${e.message}",
                     Toast.LENGTH_LONG
                 ).show()
             }

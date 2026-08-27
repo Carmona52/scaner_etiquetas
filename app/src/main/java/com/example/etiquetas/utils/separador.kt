@@ -45,21 +45,26 @@ class Separador {
 
     val lote: String get() = "$anio$dia"
     fun etiquetaseparation(text: String): Etiqueta? {
-        return when (text.length) {
-            27 -> etiquetaslargas(text)
-            26 -> etiquetasmedianas(text)
-            25 -> etiquetasVeintiyCinco(text)
-            24 -> longitudVeintiCuatro(text)
-            23 -> etiquetascorta(text)
-            22 -> longitudVeintidos(text)
-            21 -> longitudVeintiuno(text)
-            20 -> longitudVeinte(text)
-            19 -> longitudDiecinueve(text)
+        return try {
+            when (text.length) {
+                27 -> etiquetaslargas(text)
+                26 -> etiquetasmedianas(text)
+                25 -> etiquetasVeintiyCinco(text)
+                24 -> longitudVeintiCuatro(text)
+                23 -> etiquetascorta(text)
+                22 -> longitudVeintidos(text)
+                21 -> longitudVeintiuno(text)
+                20 -> longitudVeinte(text)
+                19 -> longitudDiecinueve(text)
 
-            else -> {
-                Log.d("separador", "Longitud no reconocida: ${text.length}")
-                null
+                else -> {
+                    Log.d("separador", "Longitud no reconocida: ${text.length}")
+                    null
+                }
             }
+        } catch (e: Exception) {
+            Log.e("separador", "Error al separar etiqueta: $text", e)
+            null
         }
     }
 

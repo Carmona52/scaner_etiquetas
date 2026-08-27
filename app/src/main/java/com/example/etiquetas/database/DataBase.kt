@@ -12,6 +12,9 @@ import com.example.etiquetas.database.methods.Productos
 import com.example.etiquetas.database.methods.Reportes
 import com.example.etiquetas.database.methods.Zonas
 import org.json.JSONArray
+import androidx.sqlite.driver.bundled.SQLITE_OPEN_CREATE
+import androidx.sqlite.driver.bundled.SQLITE_OPEN_FULLMUTEX
+import androidx.sqlite.driver.bundled.SQLITE_OPEN_READWRITE
 
 class DataBase private constructor(private val context: Context) {
 
@@ -28,7 +31,15 @@ class DataBase private constructor(private val context: Context) {
     init {
         val dbFile = context.getDatabasePath("etiquetas.db")
         dbFile.parentFile?.mkdirs()
-        connection = driver.open(dbFile.absolutePath)
+
+        connection = driver.open(
+            fileName = dbFile.absolutePath,
+            flags = SQLITE_OPEN_READWRITE or
+                    SQLITE_OPEN_CREATE or
+                    SQLITE_OPEN_FULLMUTEX
+        )
+
+        connection.execSQL("PRAGMA foreign_keys = ON")
 
         movimientos = Movimientos(connection)
         productos = Productos(connection)
@@ -174,10 +185,11 @@ class DataBase private constructor(private val context: Context) {
 
     private fun crearIndices() {
         connection.execSQL("CREATE INDEX IF NOT EXISTS idx_etiqueta_camara ON Etiquetas(etiquetaEscaneada, idCamara, idZona, idMovimiento)")
-        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_camara ON Camaras(numCamara)")
-        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_zona ON Zonas(numZona)")
         connection.execSQL("CREATE INDEX IF NOT EXISTS idx_tarimas ON Tarimas(idCamara, idEtiqueta)")
         connection.execSQL("CREATE INDEX IF NOT EXISTS idx_camara_conteo ON ConteoCestas(idCamara)")
+        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_etiqueta_status ON Etiquetas(etiquetaEscaneada, id DESC)");
+        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_etiqueta_camara_fecha ON Etiquetas(idCamara, fechaEscaneo)");
+        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_etiqueta_zona_fecha ON Etiquetas(idZona, fechaEscaneo)");
     }
 
     private fun crearTriggers() {
@@ -268,28 +280,32 @@ class DataBase private constructor(private val context: Context) {
         connection.execSQL(
             """
             CREATE TRIGGER IF NOT EXISTS trg_actualizar_cestas_UPDATE
-            AFTER UPDATE ON Etiquetas
-            BEGIN
-                UPDATE ConteoCestas
-                SET cantidadCestas = cantidadCestas - COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 0),
-                    totalKilos = totalKilos - (CAST(OLD.kilos AS REAL) * COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento), 0))
-                WHERE idProducto = OLD.claveProducto AND idCamara = OLD.idCamara;
+AFTER UPDATE ON Etiquetas
+BEGIN
+    UPDATE ConteoCestas
+    SET
+        cantidadCestas = cantidadCestas - COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento),0),
+        totalKilos = totalKilos - (CAST(ROUND(CAST(OLD.kilos AS REAL) * 100) AS INTEGER) * COALESCE((SELECT factor FROM Movimiento WHERE id = OLD.idMovimiento),0))
+    WHERE idProducto = OLD.claveProducto AND idCamara = OLD.idCamara;
+    INSERT INTO ConteoCestas (
+        idProducto,
+        idCamara,
+        cantidadCestas,
+        totalKilos
+    )
+    VALUES (
+        NEW.claveProducto,
+        NEW.idCamara,
+        COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento),0),
+        CAST(ROUND(CAST(NEW.kilos AS REAL) * 100) AS INTEGER) * COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento),0)
+    )
 
-                INSERT INTO ConteoCestas (idProducto, idCamara, cantidadCestas, totalKilos)
-                VALUES (
-                    NEW.claveProducto,
-                    NEW.idCamara,
-                    COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0),
-                    CAST(ROUND(CAST(NEW.kilos AS REAL) * 100) AS INTEGER) *
-                    COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0)
-                )
-                ON CONFLICT(idProducto, idCamara) DO UPDATE SET
-                    cantidadCestas = cantidadCestas + COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0),
-                    totalKilos = totalKilos + (
-                        CAST(ROUND(CAST(NEW.kilos AS REAL) * 100) AS INTEGER) *
-                        COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento), 0)
-                    );
-            END;
+    ON CONFLICT(idProducto, idCamara)
+    DO UPDATE SET
+        cantidadCestas = cantidadCestas + COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento),0),
+        totalKilos =totalKilos + (CAST(ROUND(CAST(NEW.kilos AS REAL) * 100) AS INTEGER) * COALESCE((SELECT factor FROM Movimiento WHERE id = NEW.idMovimiento),0));
+
+END;
             """.trimIndent()
         )
 

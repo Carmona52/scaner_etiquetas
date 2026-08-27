@@ -18,13 +18,11 @@ import com.example.etiquetas.databinding.FragmentSelectProductosBinding
 import com.example.etiquetas.factory.dialog.tablerow.TableCellFactory
 
 class SelectProductos : Fragment() {
-
     private var _binding: FragmentSelectProductosBinding? = null
     private val binding get() = _binding!!
     private lateinit var db: DataBase
-
     private var offsetActual = 0
-    private val limitePorPagina = 20
+    private val limitePorPagina = 40
     private var cargandoDatos = false
     private var hayMasDatos = true
 

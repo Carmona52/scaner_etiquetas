@@ -56,7 +56,9 @@ object dialoFactory {
         negativeText: String? = "Cancelar"
     ): AlertDialog {
         return AlertDialog.Builder(context).setTitle(title).setView(contentView)
-            .setPositiveButton(positiveText, null).setNegativeButton(negativeText, null)
+            .setPositiveButton(positiveText, null)
+            .setNegativeButton(negativeText, null)
+            .setNeutralButton("Neutro", null)
             .setCancelable(true).create()
     }
 

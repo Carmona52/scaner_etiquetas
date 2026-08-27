@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/tabla_ancho_total"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="48dp"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/txtClaveProducto"
+        android:layout_width="@dimen/tabla_clave"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:padding="8dp"
+        android:textAlignment="textStart" />
+
+    <TextView
+        android:id="@+id/txtDescripcion"
+        android:layout_width="@dimen/tabla_descripcion"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:padding="8dp"
+        android:textAlignment="textStart" />
+
+    <TextView
+        android:id="@+id/txtPiezas"
+        android:layout_width="@dimen/tabla_piezas"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:padding="8dp"
+        android:textAlignment="textStart" />
+
+    <TextView
+        android:id="@+id/txtKilos"
+        android:layout_width="@dimen/tabla_kilos"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:padding="8dp"
+        android:textAlignment="textStart" />
+
+    <TextView
+        android:id="@+id/txtLote"
+        android:layout_width="@dimen/tabla_lote"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:padding="8dp"
+        android:textAlignment="textStart" />
+
+    <TextView
+        android:id="@+id/txtFecha"
+        android:layout_width="@dimen/tabla_fecha"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:padding="8dp"
+        android:textAlignment="textStart" />
+
+    <TextView
+        android:id="@+id/txtHora"
+        android:layout_width="@dimen/tabla_hora"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:padding="8dp"
+        android:textAlignment="textStart" />
+
+    <ImageButton
+        android:id="@+id/btnEditar"
+        android:textAlignment="textStart"
+        android:layout_width="@dimen/tabla_accion"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Editar etiqueta"
+        android:src="@android:drawable/ic_menu_edit" />
+
+</LinearLayout>

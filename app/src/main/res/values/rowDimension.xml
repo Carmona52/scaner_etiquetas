@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="tabla_clave">70dp</dimen>
+    <dimen name="tabla_descripcion">300dp</dimen>
+    <dimen name="tabla_piezas">70dp</dimen>
+    <dimen name="tabla_kilos">70dp</dimen>
+    <dimen name="tabla_lote">70dp</dimen>
+    <dimen name="tabla_fecha">120dp</dimen>
+    <dimen name="tabla_hora">100dp</dimen>
+    <dimen name="tabla_accion">70dp</dimen>
+    <dimen name="tabla_ancho_total">1000dp</dimen>
+</resources>
