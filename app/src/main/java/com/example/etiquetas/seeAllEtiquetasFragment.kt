@@ -82,8 +82,8 @@ class SeeAllEtiquetasFragment : Fragment() {
     }
 
     private fun getTotalCestas(){
-        val cestas = db.camaras.getTotalCestas(camaraSeleccionadaId)
-        binding.totalCestas.setText("Total de Cestas Dentro la camara: $cestas")
+        val cestas = db.camaras.getTotalTransacciones(camaraSeleccionadaId)
+        binding.totalCestas.setText("Total de Transacciones: $cestas")
     }
 
 
