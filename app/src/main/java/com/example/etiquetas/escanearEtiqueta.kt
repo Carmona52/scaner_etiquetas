@@ -19,13 +19,15 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.etiquetas.adapters.etiquetas.EtiquetasAdapter
 import com.example.etiquetas.database.DataBase
 import com.example.etiquetas.database.MovimientoGuardado
 import com.example.etiquetas.database.methods.CamaraGuardada
 import com.example.etiquetas.database.methods.EtiquetaGuardada
-import com.example.etiquetas.database.methods.updateEtiqueta
+import com.example.etiquetas.database.methods.OrigenAuditoria
+import com.example.etiquetas.database.methods.UpdateEtiqueta
 import com.example.etiquetas.databinding.EscanearEtiquetaFragmentBinding
 import com.example.etiquetas.factory.dialog.dialoFactory
 import com.example.etiquetas.utils.DateBuilders
@@ -112,7 +114,9 @@ class EscanearEtiquetaFragment : Fragment() {
         binding.ingresoManual.setOnClickListener { addManual() }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun configurarRecyclerView() {
+
         etiquetasAdapter = EtiquetasAdapter { etiqueta ->
             etiqueta.id?.let { id ->
                 verifyIdentity(id.toString())
@@ -120,6 +124,12 @@ class EscanearEtiquetaFragment : Fragment() {
         }
 
         binding.recyclerEtiquetas.apply {
+            addItemDecoration(
+                DividerItemDecoration(
+                    requireContext(),
+                    DividerItemDecoration.VERTICAL
+                )
+            )
             layoutManager = LinearLayoutManager(requireContext())
             adapter = etiquetasAdapter
             setHasFixedSize(true)
@@ -212,18 +222,29 @@ class EscanearEtiquetaFragment : Fragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun guardarEtiqueta(etiqueta: String, nota: String? = null) {
-        if (_binding == null || !isAdded) return
-
+    private fun guardarEtiqueta(
+        etiqueta: String,
+        nota: String? = null,
+        origen: OrigenAuditoria = OrigenAuditoria.ESCANEO_COMPLETO
+    ) {
+        if (_binding == null || !isAdded) { return }
         viewLifecycleOwner.lifecycleScope.launch {
             scanMutex.withLock {
-                procesarEtiqueta(etiqueta = etiqueta, nota = nota)
+                procesarEtiqueta(
+                    etiqueta = etiqueta,
+                    nota = nota,
+                    origen = origen
+                )
             }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private suspend fun procesarEtiqueta(etiqueta: String, nota: String?) {
+    private suspend fun procesarEtiqueta(
+        etiqueta: String,
+        nota: String?,
+        origen: OrigenAuditoria
+    ) {
         if (_binding == null || !isAdded) return
 
         val camara = camaraSeleccionada
@@ -351,6 +372,8 @@ class EscanearEtiquetaFragment : Fragment() {
             return
         }
 
+        Log.d("KILOS", "Kilos: ${etiquetaParseada.kilos}")
+
         val userName = UserSession.obtener(requireContext())
         val dates = DateBuilders()
         val fecha = dates.makeDate(etiquetaParseada)
@@ -367,7 +390,8 @@ class EscanearEtiquetaFragment : Fragment() {
                 escaneadoPor = userName,
                 etiquetaEscaneada = etiqueta,
                 notas = nota,
-                idMovimiento = idMov
+                idMovimiento = idMov,
+                origen = origen
             )
         }
 
@@ -397,6 +421,7 @@ class EscanearEtiquetaFragment : Fragment() {
             etiquetasAdapter.submitList(nuevaLista)
             binding.recyclerEtiquetas.scrollToPosition(0)
         }
+
     }
 
     private fun actualizarTablaFiltrada() {
@@ -448,7 +473,11 @@ class EscanearEtiquetaFragment : Fragment() {
                 val etiqueta = etiquetaInput.text.toString().trim()
                 if (etiqueta.isNotEmpty()) {
                     if (etiqueta.length > 15) {
-                        guardarEtiqueta(etiqueta, "Ingreso manual")
+                        guardarEtiqueta(
+                            etiqueta = etiqueta,
+                            nota = "Ingreso manual",
+                            origen = OrigenAuditoria.MANUAL
+                        )
                         Toast.makeText(requireContext(), "Etiqueta Ingresada", Toast.LENGTH_SHORT)
                             .show()
                         dialog.dismiss()
@@ -471,6 +500,7 @@ class EscanearEtiquetaFragment : Fragment() {
         dialog.show()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun verifyIdentity(id: String) {
         val context = requireContext()
         val layout = dialoFactory.createContenedor(context)
@@ -503,9 +533,10 @@ class EscanearEtiquetaFragment : Fragment() {
         dialog.show()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun showID(etiquetaId: String) {
         val context = requireContext()
-        val etiquetaUpdate: updateEtiqueta? = db.etiquetas.getOneEtiqueta(etiquetaId)
+        val etiquetaUpdate: UpdateEtiqueta? = db.etiquetas.getOneEtiqueta(etiquetaId)
         val layout = dialoFactory.createContenedor(context)
 
         val etiquetaInput = dialoFactory.addInputField(
@@ -539,8 +570,7 @@ class EscanearEtiquetaFragment : Fragment() {
             habilitado = true
         )
 
-        val factorActual =
-            listaMovimientos.firstOrNull { it.tipoMovimiento == etiquetaUpdate?.tipoMovimiento }?.factor
+        val factorActual = listaMovimientos.firstOrNull { it.tipoMovimiento == etiquetaUpdate?.tipoMovimiento }?.factor
         val movimientosPermitidos = if (factorActual != null) {
             listaMovimientos.filter { it.factor == factorActual }
         } else {
@@ -576,36 +606,59 @@ class EscanearEtiquetaFragment : Fragment() {
 
         dialog.setOnShowListener {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                    val res = updateEtiqueta(
-                            etiquetaEscaneada = etiquetaInput.text.toString(),
-                            claveProducto = claveProducto.text.toString(),
-                            piezas = piezas.text.toString(),
-                            kilos = kilos.text.toString(),
-                            lote = loteProducto.text.toString(),
-                            tipoMovimiento = tipoMovimientoSpinner.selectedItem.toString()
+                val res = UpdateEtiqueta(
+                    etiquetaEscaneada = etiquetaInput.text.toString(),
+                    claveProducto = claveProducto.text.toString(),
+                    piezas = piezas.text.toString(),
+                    kilos = kilos.text.toString(),
+                    lote = loteProducto.text.toString(),
+                    tipoMovimiento = tipoMovimientoSpinner.selectedItem.toString()
+                )
+
+
+                viewLifecycleOwner.lifecycleScope.launch {
+                    try {
+                        val usuarioActual = UserSession.obtener(requireContext())
+                        val exito = withContext(Dispatchers.IO) {
+                            db.etiquetas.upsertEtiqueta(
+                                id = etiquetaId,
+                                etiqueta = res,
+                                usuario = usuarioActual
+                            )
+                        }
+                        if (exito) {
+                            soundHelper?.makeGoodSound()
+                            actualizarTablaFiltrada()
+                            dialog.dismiss()
+
+                            Toast.makeText(
+                                context,
+                                "Éxito al actualizar",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            soundHelper?.makeBadSound()
+
+                            Toast.makeText(
+                                context,
+                                "No se pudo actualizar la etiqueta",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    } catch (e: Exception) {
+                        Log.e(
+                            "EditarEtiqueta",
+                            "Error al actualizar etiqueta",
+                            e
                         )
 
-
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        try{
-                            val exito = withContext(Dispatchers.IO){
-                                db.etiquetas.upsertEtiqueta(etiquetaId,res)
-                            }
-
-                            if (exito) {
-                                soundHelper?.makeGoodSound()
-                                actualizarTablaFiltrada()
-                                dialog.dismiss()
-                                Toast.makeText(context, "Éxito al actualizar", Toast.LENGTH_SHORT).show()
-                            } else {
-                                soundHelper?.makeBadSound()
-                                Toast.makeText(context, "Tipo de movimiento no reconocido, no se actualizó", Toast.LENGTH_LONG).show()
-                            }
-                        }catch (e: Exception){
-                            Log.d("Error", "${e}")
-                            Toast.makeText(context,"Error al Actualizar", Toast.LENGTH_LONG).show()
-                        }
+                        Toast.makeText(
+                            context,
+                            "Error al actualizar",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
+                }
 
 
             }
@@ -618,9 +671,27 @@ class EscanearEtiquetaFragment : Fragment() {
                         viewLifecycleOwner.lifecycleScope.launch {
                             try {
                                 val id = etiquetaId.toLong()
-                                withContext(Dispatchers.IO) {
-                                    db.etiquetas.eliminarEtiqueta(id)
+                                val usuarioActual = UserSession.obtener(requireContext())
+
+                                val eliminado = withContext(Dispatchers.IO) {
+                                    db.etiquetas.eliminarEtiqueta(
+                                        id = id,
+                                        usuario = usuarioActual
+                                    )
                                 }
+
+                                if (!eliminado) {
+                                    soundHelper?.makeBadSound()
+
+                                    Toast.makeText(
+                                        context,
+                                        "No se pudo eliminar la etiqueta",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                    return@launch
+                                }
+
                                 val nuevaLista = etiquetasAdapter.currentList.filter {
                                     it.id != id
                                 }
@@ -628,15 +699,26 @@ class EscanearEtiquetaFragment : Fragment() {
                                 etiquetasAdapter.submitList(nuevaLista)
                                 dialog.dismiss()
                                 soundHelper?.makeGoodSound()
-                                Toast.makeText(context, "Éxito al borrar", Toast.LENGTH_SHORT)
-                                    .show()
+
+                                Toast.makeText(
+                                    context,
+                                    "Etiqueta eliminada",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             } catch (e: Exception) {
-                                Log.d("Error", "${e}")
-                                Toast.makeText(context, "Falló al borrar", Toast.LENGTH_SHORT)
-                                    .show()
+                                Log.e(
+                                    "EliminarEtiqueta",
+                                    "Error al eliminar etiqueta",
+                                    e
+                                )
+
+                                Toast.makeText(
+                                    context,
+                                    "Falló al borrar",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
-
                     }
                     .setNegativeButton("Cancelar", null)
                     .setCancelable(true)
