@@ -113,6 +113,7 @@ class Separador {
             )
         }
 
+
         if (claveProducto == "1100") {
             val actualYear = LocalDateTime.now().year.toString()
             val getFirstDigit = actualYear.substring(0, 3)
@@ -160,18 +161,79 @@ class Separador {
             )
         }
 
+        val claveProductoShort = claveProducto.substring(0, 3)
+        if (claveProductoShort == "725") {
+            return Etiqueta(
+                claveProducto = text.substring(0, 3),
+
+                piezas = text.substring(5, 7),
+
+                kilos = text.substring(7, 13),
+
+                lote = loteFinal,
+                numEmpaque = text.substring(22, 26),
+
+                identificador = text[26].toString(),
+
+                //obtener valores de la hora
+                primDigHora = text[17].toString(),
+                segDigHora = text[13].toString(),
+                primDigMin = text[3].toString(),
+                segDigMin = text[20].toString(),
+                primDigSeg = text[21].toString(),
+                segDigSeg = text[12].toString(),
+
+                //valores para fecha
+                ultDigAnio = text[15].toString(),
+                primDigMes = text[19].toString(),
+                segDigMes = text[14].toString(),
+                primDigDia = text[18].toString(),
+                segDigDia = text[16].toString(),
+
+                notas = "Escaneo Completo"
+            )
+        }
+
+
+        if (claveProductoShort == "546") {
+            return Etiqueta(
+                claveProducto = text.substring(0, 3),
+
+                piezas = text.substring(5, 7),
+
+                kilos = text.substring(7, 13),
+
+                lote = loteFinal,
+                numEmpaque = text.substring(22, 26),
+
+                identificador = text[26].toString(),
+
+                //obtener valores de la hora
+                primDigHora = text[17].toString(),
+                segDigHora = text[13].toString(),
+                primDigMin = text[3].toString(),
+                segDigMin = text[20].toString(),
+                primDigSeg = text[21].toString(),
+                segDigSeg = text[12].toString(),
+
+                //valores para fecha
+                ultDigAnio = text[15].toString(),
+                primDigMes = text[19].toString(),
+                segDigMes = text[14].toString(),
+                primDigDia = text[18].toString(),
+                segDigDia = text[16].toString(),
+
+                notas = "Escaneo Completo"
+            )
+        }
+
         return Etiqueta(
             claveProducto = text.substring(0, 3),
-
             piezas = text.substring(5, 7),
-
             kilos = text.substring(8, 13),
-
             lote = loteFinal,
             numEmpaque = text.substring(22, 26),
-
             identificador = text[26].toString(),
-
             //obtener valores de la hora
             primDigHora = text[17].toString(),
             segDigHora = text[13].toString(),

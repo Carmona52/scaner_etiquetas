@@ -8,31 +8,103 @@ class Reportes(private val connection: SQLiteConnection) {
 
     companion object {
         private val BASE_SELECT_QUERY = """
-            SELECT
-                e.id,
-                e.etiquetaEscaneada,
-                e.claveProducto,
-                a.descripcion,
-                e.piezas,
-                e.kilos,
-                e.lote,
-                e.fecha,
-                e.hora,
-                e.fechaEscaneo,
-                z.nombreZona,
-                c.nombreCamara,
-                e.turno,
-                m.tipoMovimiento,
-                e.idMovimiento,
-                e.escaneadoPor,
-                e.notas,
-                e.numEmpaque
-            FROM Etiquetas e
-            LEFT JOIN Articulos a ON e.claveProducto = a.claveProducto
-            LEFT JOIN Zonas z ON e.idZona = z.id
-            LEFT JOIN Camaras c ON e.idCamara = c.id
-            LEFT JOIN Movimiento m ON e.idMovimiento = m.id
-        """.trimIndent()
+        SELECT
+            e.id,
+            e.etiquetaEscaneada,
+            e.claveProducto,
+            a.descripcion,
+            e.piezas,
+            e.kilos,
+            e.lote,
+            e.fecha,
+            e.hora,
+            e.fechaEscaneo,
+            z.nombreZona,
+            c.nombreCamara,
+            e.turno,
+            m.tipoMovimiento,
+            e.idMovimiento,
+            e.escaneadoPor,
+            e.notas,
+            e.numEmpaque,
+
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM AuditoriaEtiquetas aud
+                    WHERE aud.idEtiqueta = e.id
+                      AND aud.tipoEvento = 'EDICION'
+                )
+                THEN 1
+                ELSE 0
+            END AS editada,
+
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM AuditoriaEtiquetas aud
+                    WHERE aud.etiquetaEscaneada = e.etiquetaEscaneada
+                      AND aud.tipoEvento = 'EDICION'
+                      AND aud.campoModificado = 'kilos'
+                )
+                THEN 1
+                ELSE 0
+            END AS kilosEditados,
+
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM AuditoriaEtiquetas aud
+                    WHERE aud.etiquetaEscaneada = e.etiquetaEscaneada
+                      AND aud.tipoEvento = 'EDICION'
+                      AND aud.campoModificado = 'claveProducto'
+                )
+                THEN 1
+                ELSE 0
+            END AS claveEditada,
+
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM AuditoriaEtiquetas aud
+                    WHERE aud.etiquetaEscaneada = e.etiquetaEscaneada
+                      AND aud.tipoEvento = 'EDICION'
+                      AND aud.campoModificado = 'lote'
+                )
+                THEN 1
+                ELSE 0
+            END AS loteEditado,
+
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM AuditoriaEtiquetas aud
+                    WHERE aud.etiquetaEscaneada = e.etiquetaEscaneada
+                      AND aud.tipoEvento = 'EDICION'
+                      AND aud.campoModificado = 'piezas'
+                )
+                THEN 1
+                ELSE 0
+            END AS piezasEditadas,
+
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM AuditoriaEtiquetas aud
+                    WHERE aud.etiquetaEscaneada = e.etiquetaEscaneada
+                      AND aud.tipoEvento = 'EDICION'
+                      AND aud.campoModificado = 'tipoMovimiento'
+                )
+                THEN 1
+                ELSE 0
+            END AS movimientoEditado
+
+        FROM Etiquetas e
+        LEFT JOIN Articulos a ON e.claveProducto = a.claveProducto
+        LEFT JOIN Zonas z ON e.idZona = z.id
+        LEFT JOIN Camaras c ON e.idCamara = c.id
+        LEFT JOIN Movimiento m ON e.idMovimiento = m.id
+    """.trimIndent()
     }
     fun obtenerReporte(): List<EtiquetaGuardada> {
         val query = "$BASE_SELECT_QUERY ORDER BY e.id ASC"
@@ -202,7 +274,13 @@ class Reportes(private val connection: SQLiteConnection) {
             idMovimiento = stmt.getInt(14),
             escaneadoPor = stmt.getText(15),
             notas = stmt.getText(16),
-            numEmpaque = stmt.getText(17)
+            numEmpaque = stmt.getText(17),
+            editada = stmt.getInt(18) == 1,
+            kilosEditados = stmt.getInt(19) == 1,
+            claveEditada = stmt.getInt(20) == 1,
+            loteEditado = stmt.getInt(21) == 1,
+            piezasEditadas = stmt.getInt(22) == 1,
+            movimientoEditado = stmt.getInt(23) == 1
         )
     }
 }

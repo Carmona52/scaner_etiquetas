@@ -7,6 +7,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.etiquetas.database.methods.EtiquetaGuardada
 import com.example.etiquetas.databinding.ItemEtiquetaBinding
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DividerItemDecoration
+import com.example.etiquetas.R
 
 class EtiquetasAdapter(
     private val onEditar: (EtiquetaGuardada) -> Unit
@@ -20,30 +23,53 @@ class EtiquetasAdapter(
 
         fun bind(etiqueta: EtiquetaGuardada) {
 
-            binding.txtClaveProducto.text =
-                etiqueta.claveProducto ?: ""
-
-            binding.txtDescripcion.text =
-                etiqueta.descripcionArticulo ?: ""
-
-            binding.txtPiezas.text =
-                etiqueta.piezas ?: ""
-
-            binding.txtKilos.text =
-                etiqueta.kilos ?: ""
-
-            binding.txtLote.text =
-                etiqueta.lote ?: ""
-
-            binding.txtFecha.text =
-                etiqueta.fecha ?: ""
-
-            binding.txtHora.text =
-                etiqueta.hora ?: ""
-
+            binding.txtClaveProducto.text = etiqueta.claveProducto ?: ""
+            binding.txtDescripcion.text = etiqueta.descripcionArticulo ?: ""
+            binding.txtPiezas.text = etiqueta.piezas ?: ""
+            binding.txtKilos.text = etiqueta.kilos ?: ""
+            binding.txtLote.text = etiqueta.lote ?: ""
+            binding.txtFecha.text = etiqueta.fecha ?: ""
+            binding.txtHora.text = etiqueta.hora ?: ""
+            binding.txtClaveProducto.setBackgroundColor(
+                ContextCompat.getColor(
+                    binding.root.context,
+                    if (etiqueta.claveEditada)
+                        android.R.color.holo_orange_light
+                    else
+                        android.R.color.transparent
+                )
+            )
+            binding.txtPiezas.setBackgroundColor(
+                ContextCompat.getColor(
+                    binding.root.context,
+                    if (etiqueta.piezasEditadas)
+                        android.R.color.holo_orange_light
+                    else
+                        android.R.color.transparent
+                )
+            )
+            binding.txtKilos.setBackgroundColor(
+                ContextCompat.getColor(
+                    binding.root.context,
+                    if (etiqueta.kilosEditados)
+                        android.R.color.holo_orange_light
+                    else
+                        android.R.color.transparent
+                )
+            )
+            binding.txtLote.setBackgroundColor(
+                ContextCompat.getColor(
+                    binding.root.context,
+                    if (etiqueta.loteEditado)
+                        android.R.color.holo_orange_light
+                    else
+                        android.R.color.transparent
+                )
+            )
             binding.btnEditar.setOnClickListener {
                 onEditar(etiqueta)
             }
+
         }
     }
 

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="@dimen/tabla_ancho_total"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center_vertical"
     android:minHeight="48dp"
     android:orientation="horizontal">
@@ -72,5 +72,4 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="Editar etiqueta"
         android:src="@android:drawable/ic_menu_edit" />
-
 </LinearLayout>

@@ -15,18 +15,19 @@ import org.json.JSONArray
 import androidx.sqlite.driver.bundled.SQLITE_OPEN_CREATE
 import androidx.sqlite.driver.bundled.SQLITE_OPEN_FULLMUTEX
 import androidx.sqlite.driver.bundled.SQLITE_OPEN_READWRITE
+import com.example.etiquetas.database.methods.AuditoriaEtiquetas
 
 class DataBase private constructor(private val context: Context) {
 
     private val driver = BundledSQLiteDriver()
     private val connection: SQLiteConnection
-
     val movimientos: Movimientos
     val productos: Productos
     val camaras: Camaras
     val zonas: Zonas
     val etiquetas: Etiqueta
     val reportes: Reportes
+    val auditoriaEtiquetas: AuditoriaEtiquetas
 
     init {
         val dbFile = context.getDatabasePath("etiquetas.db")
@@ -45,9 +46,9 @@ class DataBase private constructor(private val context: Context) {
         productos = Productos(connection)
         camaras = Camaras(connection)
         zonas = Zonas(connection)
-        etiquetas = Etiqueta(connection)
         reportes = Reportes(connection)
-
+        auditoriaEtiquetas = AuditoriaEtiquetas(connection)
+        etiquetas = Etiqueta(connection, auditoriaEtiquetas)
         inicializarBaseDeDatos()
     }
 
@@ -181,15 +182,41 @@ class DataBase private constructor(private val context: Context) {
             )
             """.trimIndent()
         )
+
+        connection.execSQL(
+            """
+                CREATE TABLE IF NOT EXISTS AuditoriaEtiquetas(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                idOperacion TEXT NOT NULL,
+                idEtiqueta INTEGER NOT NULL,
+                etiquetaEscaneada TEXT NOT NULL,
+                tipoEvento TEXT NOT NULL,
+                origen TEXT NOT NULL,   
+                campoModificado TEXT,
+                valorAnterior TEXT,
+                valorNuevo TEXT,
+                idMovimiento INTEGER,
+                tipoMovimiento TEXT,
+                factor INTEGER,
+                mensaje TEXT NOT NULL DEFAULT '',
+                observacion TEXT,
+                usuario TEXT NOT NULL, 
+                fechaEvento TEXT NOT NULL
+                )
+            """.trimIndent()
+        )
     }
 
     private fun crearIndices() {
         connection.execSQL("CREATE INDEX IF NOT EXISTS idx_etiqueta_camara ON Etiquetas(etiquetaEscaneada, idCamara, idZona, idMovimiento)")
         connection.execSQL("CREATE INDEX IF NOT EXISTS idx_tarimas ON Tarimas(idCamara, idEtiqueta)")
         connection.execSQL("CREATE INDEX IF NOT EXISTS idx_camara_conteo ON ConteoCestas(idCamara)")
-        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_etiqueta_status ON Etiquetas(etiquetaEscaneada, id DESC)");
-        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_etiqueta_camara_fecha ON Etiquetas(idCamara, fechaEscaneo)");
-        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_etiqueta_zona_fecha ON Etiquetas(idZona, fechaEscaneo)");
+        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_etiqueta_status ON Etiquetas(etiquetaEscaneada, id DESC)")
+        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_etiqueta_camara_fecha ON Etiquetas(idCamara, fechaEscaneo)")
+        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_etiqueta_zona_fecha ON Etiquetas(idZona, fechaEscaneo)")
+        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_auditoria_etiqueta ON AuditoriaEtiquetas(idEtiqueta, fechaEvento DESC)")
+        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_auditoria_codigo ON AuditoriaEtiquetas(etiquetaEscaneada, fechaEvento DESC)")
+        connection.execSQL("CREATE INDEX IF NOT EXISTS idx_auditoria_operacion ON AuditoriaEtiquetas(idOperacion)")
     }
 
     private fun crearTriggers() {
